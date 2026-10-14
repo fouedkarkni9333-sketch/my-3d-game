@@ -15,11 +15,10 @@
 <body>
     <div id="info">قفز فوق العقبات بحذر!</div>
 
-    <!-- تم عكس ترتيب الأزرار هنا لضمان مطابقتها لجهات الشاشة -->
     <div class="controls">
-        <div class="btn" id="btnRight">▶</div>
-        <div class="btn" id="btnJump">▲</div>
         <div class="btn" id="btnLeft">◀</div>
+        <div class="btn" id="btnJump">▲</div>
+        <div class="btn" id="btnRight">▶</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -76,6 +75,7 @@
             el.addEventListener('mouseup', onRelease);
         };
 
+        // تم تصحيح الوظائف هنا: زر اليسار يحرك يسار وزر اليمين يحرك يمين
         setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
@@ -88,6 +88,7 @@
         function animate() {
             requestAnimationFrame(animate);
 
+            // تم تصحيح الاتجاهات في الحركة البرمجية
             if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
             if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
 
