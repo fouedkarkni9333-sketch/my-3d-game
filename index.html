@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة المنصات ثلاثية الأبعاد</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; }
+        #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-size: 18px; text-shadow: 1px 1px 2px black; }
+    </style>
+</head>
+<body>
+    <div id="info">استخدم السهمين الأيمن والأيسر أو لمس الشاشة للتحرك والقفز!</div>
+    
+    <!-- استدعاء مكتبة Three.js لرسم الـ 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // إضاءة
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // الأرضية أو المنصة
+        const geometry = new THREE.BoxGeometry(5, 0.5, 20);
+        const material = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+        const platform = new THREE.Mesh(geometry, material);
+        platform.position.set(0, -1, 0);
+        scene.add(platform);
+
+        // اللاعب (مكعب يمثل الشخصية)
+        const playerGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const playerMat = new THREE.MeshStandardMaterial({ color: 0xFF4500 });
+        const player = new THREE.Mesh(playerGeo, playerMat);
+        player.position.set(0, 0, 0);
+        scene.add(player);
+
+        camera.position.set(0, 3, 6);
+        camera.lookAt(player.position);
+
+        let moveLeft = false, moveRight = false;
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft = true;
+            if (e.key === 'ArrowRight') moveRight = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft = false;
+            if (e.key === 'ArrowRight') moveRight = false;
+        });
+
+        // حلقة اللعبة لتحديث الحركة
+        function animate() {
+            requestAnimationFrame(animate);
+            if (moveLeft && player.position.x > -2) player.position.x -= 0.1;
+            if (moveRight && player.position.x < 2) player.position.x += 0.1;
+            
+            // تحريك الكاميرا خلف اللاعب
+            camera.position.x = player.position.x * 0.5;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
