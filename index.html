@@ -10,7 +10,7 @@
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; }
         #gameOverScreen h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px black; }
         #restartBtn { padding: 12px 30px; font-size: 20px; font-weight: bold; background: #ff4500; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; direction: ltr; }
         .btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
         .btn:active { background: rgba(255, 255, 255, 0.8); color: black; }
     </style>
@@ -25,11 +25,11 @@
         <button id="restartBtn" onclick="resetGame()">إعادة المحاولة</button>
     </div>
 
-    <!-- أزرار التحكم -->
+    <!-- أزرار التحكم: اليسار على اليسار، القفز في الوسط، اليمين على اليمين بفضل خاصية ltr -->
     <div class="controls">
-        <div class="btn" id="btnLeftVisual">◀</div>
+        <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
-        <div class="btn" id="btnRightVisual">▶</div>
+        <div class="btn" id="btnRight">▶</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -90,8 +90,9 @@
             el.addEventListener('mouseup', onRelease);
         };
 
-        setupBtn('btnLeftVisual', () => moveLeft = true, () => moveLeft = false);
-        setupBtn('btnRightVisual', () => moveRight = true, () => moveRight = false);
+        // ربط زر اليسار بالحركة يساراً وزر اليمين بالحركة يميناً بدقة
+        setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
+        setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
             if (isGrounded && !isGameOver) {
                 playerVelocityY = 0.25;
@@ -131,11 +132,11 @@
                 if (obstacle.position.z > 4) {
                     obstacle.position.z = -30;
                     score += 10;
-                    gameSpeed += 0.005; // زيادة تدريجية في السرعة
+                    gameSpeed += 0.005;
                     document.getElementById('scoreBoard').innerText = "النقاط: " + score;
                 }
 
-                // فحص الاصطدام بدقة
+                // فحص الاصطدام
                 if (Math.abs(player.position.z - obstacle.position.z) < 0.8 &&
                     Math.abs(player.position.x - obstacle.position.x) < 0.8 &&
                     player.position.y < 0.6) {
