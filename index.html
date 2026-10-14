@@ -3,23 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة ثلاثية الأبعاد مع عقبات</title>
+    <title>لعبة المكعب ثلاثية الأبعاد</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; }
-        #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-size: 18px; text-shadow: 1px 1px 3px black; z-index: 10; }
+        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: white; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px black; z-index: 10; }
+        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; }
+        #gameOverScreen h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px black; }
+        #restartBtn { padding: 12px 30px; font-size: 20px; font-weight: bold; background: #ff4500; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; }
-        .btn { width: 70px; height: 70px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
+        .btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
         .btn:active { background: rgba(255, 255, 255, 0.8); color: black; }
     </style>
 </head>
 <body>
-    <div id="info">قفز فوق العقبات بحذر!</div>
+    <div id="scoreBoard">النقاط: 0</div>
 
-    <!-- الترتيب البصري المباشر: يمين على اليمين، قفز في الوسط، يسار على اليسار -->
+    <!-- شاشة الخسارة -->
+    <div id="gameOverScreen">
+        <h1>لقد اصطدمت! 💥</h1>
+        <p id="finalScore" style="font-size: 20px; margin-bottom: 20px;">نقاطك: 0</p>
+        <button id="restartBtn" onclick="resetGame()">إعادة المحاولة</button>
+    </div>
+
+    <!-- أزرار التحكم -->
     <div class="controls">
-        <div class="btn" id="btnRightVisual">▶</div>
-        <div class="btn" id="btnJump">▲</div>
         <div class="btn" id="btnLeftVisual">◀</div>
+        <div class="btn" id="btnJump">▲</div>
+        <div class="btn" id="btnRightVisual">▶</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -52,11 +62,11 @@
         player.position.set(0, 0, 0);
         scene.add(player);
 
-        // عقبة متحركة
+        // العقبة
         const obsGeo = new THREE.BoxGeometry(1, 1, 1);
         const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
         const obstacle = new THREE.Mesh(obsGeo, obsMat);
-        obstacle.position.set(0, 0, -25);
+        obstacle.position.set(0, 0, -30);
         scene.add(obstacle);
 
         camera.position.set(0, 2.5, 5);
@@ -66,6 +76,10 @@
         let playerVelocityY = 0;
         let isGrounded = true;
         const gravity = -0.015;
+        
+        let score = 0;
+        let gameSpeed = 0.12;
+        let isGameOver = false;
 
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
@@ -76,47 +90,6 @@
             el.addEventListener('mouseup', onRelease);
         };
 
-        // ربط الزر الأيمن بصرياً بالحركة يميناً، والزر الأيسر بصرياً بالحركة يساراً
-        setupBtn('btnRightVisual', () => moveRight = true, () => moveRight = false);
         setupBtn('btnLeftVisual', () => moveLeft = true, () => moveLeft = false);
-        setupBtn('btnJump', () => {
-            if (isGrounded) {
-                playerVelocityY = 0.25;
-                isGrounded = false;
-            }
-        }, () => {});
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
-            if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
-
-            player.position.y += playerVelocityY;
-            if (!isGrounded) {
-                playerVelocityY += gravity;
-                if (player.position.y <= 0) {
-                    player.position.y = 0;
-                    playerVelocityY = 0;
-                    isGrounded = true;
-                }
-            }
-
-            obstacle.position.z += 0.12;
-            if (obstacle.position.z > 4) {
-                obstacle.position.z = -30;
-            }
-
-            camera.position.x = player.position.x * 0.4;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-</html>
+        setupBtn('btnRightVisual', () => moveRight = true, () => moveRight = false);
+        setupBtn('btnJump', () =>
