@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة ثلاثية الأبعاد</title>
+    <title>لعبة ثلاثية الأبعاد مع عقبات</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; }
         #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-size: 18px; text-shadow: 1px 1px 3px black; z-index: 10; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; px: 20px; box-sizing: border-box; z-index: 10; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; }
         .btn { width: 70px; height: 70px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
         .btn:active { background: rgba(255, 255, 255, 0.8); color: black; }
     </style>
 </head>
 <body>
-    <div id="info">استخدم الأزرار في الأسفل للتحرك والقفز!</div>
+    <div id="info">قفز فوق العقبات بحذر!</div>
 
-    <!-- أزرار التحكم باللمس -->
     <div class="controls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -25,7 +24,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // لون السماء
+        scene.background = new THREE.Color(0x87CEEB);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -39,10 +38,10 @@
         scene.add(new THREE.AmbientLight(0x606060));
 
         // الأرضية
-        const geometry = new THREE.BoxGeometry(6, 0.5, 30);
+        const geometry = new THREE.BoxGeometry(6, 0.5, 50);
         const material = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
         const platform = new THREE.Mesh(geometry, material);
-        platform.position.set(0, -1, -5);
+        platform.position.set(0, -1, -15);
         scene.add(platform);
 
         // اللاعب
@@ -52,16 +51,21 @@
         player.position.set(0, 0, 0);
         scene.add(player);
 
+        // إنشاء عقبة متحركة
+        const obsGeo = new THREE.BoxGeometry(1, 1, 1);
+        const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
+        const obstacle = new THREE.Mesh(obsGeo, obsMat);
+        obstacle.position.set(0, 0, -20);
+        scene.add(obstacle);
+
         camera.position.set(0, 2.5, 5);
         camera.lookAt(player.position);
 
-        // متغيرة الحركة والفيزياء
         let moveLeft = false, moveRight = false;
         let playerVelocityY = 0;
         let isGrounded = true;
         const gravity = -0.015;
 
-        // أحداث اللمس للأزرار
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
             el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); });
@@ -82,10 +86,11 @@
         function animate() {
             requestAnimationFrame(animate);
 
+            // تحريك اللاعب يميناً ويساراً
             if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
             if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
 
-            // الفيزياء للقفز والجاذبية
+            // فيزياء القفز
             player.position.y += playerVelocityY;
             if (!isGrounded) {
                 playerVelocityY += gravity;
@@ -94,6 +99,20 @@
                     playerVelocityY = 0;
                     isGrounded = true;
                 }
+            }
+
+            // حركة العقبة نحو اللاعب
+            obstacle.position.z += 0.15;
+            if (obstacle.position.z > 5) {
+                obstacle.position.z = -25; // إعادة العقبة للخلف عند تجاوزها
+            }
+
+            // فحص الاصطدام البسيط مع العقبة
+            if (Math.abs(player.position.z - obstacle.position.z) < 0.8 &&
+                Math.abs(player.position.x - obstacle.position.x) < 0.8 &&
+                player.position.y < 0.6) {
+                // إعادة تعيين مكان العقبة عند الاصطدام
+                obstacle.position.z = -25;
             }
 
             camera.position.x = player.position.x * 0.4;
