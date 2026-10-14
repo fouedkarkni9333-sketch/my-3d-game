@@ -15,6 +15,7 @@
 <body>
     <div id="info">قفز فوق العقبات بحذر!</div>
 
+    <!-- أزرار التحكم مرتبة: يسار، قفز، يمين -->
     <div class="controls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -51,11 +52,11 @@
         player.position.set(0, 0, 0);
         scene.add(player);
 
-        // إنشاء عقبة متحركة
+        // عقبة متحركة واضحة
         const obsGeo = new THREE.BoxGeometry(1, 1, 1);
         const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
         const obstacle = new THREE.Mesh(obsGeo, obsMat);
-        obstacle.position.set(0, 0, -20);
+        obstacle.position.set(0, 0, -25);
         scene.add(obstacle);
 
         camera.position.set(0, 2.5, 5);
@@ -68,12 +69,14 @@
 
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
+            if(!el) return;
             el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); });
             el.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); });
             el.addEventListener('mousedown', onPress);
             el.addEventListener('mouseup', onRelease);
         };
 
+        // ربط الاتجاهات الصحيحة للأزرار
         setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
@@ -86,7 +89,7 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // تحريك اللاعب يميناً ويساراً
+            // حركة اللاعب (اليمين يحرك يمين واليسار يحرك يسار)
             if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
             if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
 
@@ -101,18 +104,10 @@
                 }
             }
 
-            // حركة العقبة نحو اللاعب
-            obstacle.position.z += 0.15;
-            if (obstacle.position.z > 5) {
-                obstacle.position.z = -25; // إعادة العقبة للخلف عند تجاوزها
-            }
-
-            // فحص الاصطدام البسيط مع العقبة
-            if (Math.abs(player.position.z - obstacle.position.z) < 0.8 &&
-                Math.abs(player.position.x - obstacle.position.x) < 0.8 &&
-                player.position.y < 0.6) {
-                // إعادة تعيين مكان العقبة عند الاصطدام
-                obstacle.position.z = -25;
+            // حركة العقبة نحو المكعب
+            obstacle.position.z += 0.12;
+            if (obstacle.position.z > 4) {
+                obstacle.position.z = -30; // إعادة العقبة للخلف
             }
 
             camera.position.x = player.position.x * 0.4;
