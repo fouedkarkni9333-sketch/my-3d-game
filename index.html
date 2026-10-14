@@ -92,4 +92,70 @@
 
         setupBtn('btnLeftVisual', () => moveLeft = true, () => moveLeft = false);
         setupBtn('btnRightVisual', () => moveRight = true, () => moveRight = false);
-        setupBtn('btnJump', () =>
+        setupBtn('btnJump', () => {
+            if (isGrounded && !isGameOver) {
+                playerVelocityY = 0.25;
+                isGrounded = false;
+            }
+        }, () => {});
+
+        function resetGame() {
+            isGameOver = false;
+            score = 0;
+            gameSpeed = 0.12;
+            player.position.set(0, 0, 0);
+            obstacle.position.z = -30;
+            document.getElementById('scoreBoard').innerText = "النقاط: 0";
+            document.getElementById('gameOverScreen').style.display = 'none';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isGameOver) {
+                if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
+                if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
+
+                player.position.y += playerVelocityY;
+                if (!isGrounded) {
+                    playerVelocityY += gravity;
+                    if (player.position.y <= 0) {
+                        player.position.y = 0;
+                        playerVelocityY = 0;
+                        isGrounded = true;
+                    }
+                }
+
+                // حركة العقبة وزيادة السرعة تدريجياً
+                obstacle.position.z += gameSpeed;
+                if (obstacle.position.z > 4) {
+                    obstacle.position.z = -30;
+                    score += 10;
+                    gameSpeed += 0.005; // زيادة تدريجية في السرعة
+                    document.getElementById('scoreBoard').innerText = "النقاط: " + score;
+                }
+
+                // فحص الاصطدام بدقة
+                if (Math.abs(player.position.z - obstacle.position.z) < 0.8 &&
+                    Math.abs(player.position.x - obstacle.position.x) < 0.8 &&
+                    player.position.y < 0.6) {
+                    isGameOver = true;
+                    document.getElementById('finalScore').innerText = "نقاطك النهائية: " + score;
+                    document.getElementById('gameOverScreen').style.display = 'flex';
+                }
+
+                camera.position.x = player.position.x * 0.4;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
