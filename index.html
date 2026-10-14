@@ -7,7 +7,7 @@
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; }
         #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-size: 18px; text-shadow: 1px 1px 3px black; z-index: 10; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; direction: ltr; }
         .btn { width: 70px; height: 70px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
         .btn:active { background: rgba(255, 255, 255, 0.8); color: black; }
     </style>
@@ -15,11 +15,11 @@
 <body>
     <div id="info">قفز فوق العقبات بحذر!</div>
 
-    <!-- أزرار التحكم مرتبة: يسار، قفز، يمين -->
+    <!-- تم عكس ترتيب الأزرار هنا لضمان مطابقتها لجهات الشاشة -->
     <div class="controls">
-        <div class="btn" id="btnLeft">◀</div>
-        <div class="btn" id="btnJump">▲</div>
         <div class="btn" id="btnRight">▶</div>
+        <div class="btn" id="btnJump">▲</div>
+        <div class="btn" id="btnLeft">◀</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -52,7 +52,7 @@
         player.position.set(0, 0, 0);
         scene.add(player);
 
-        // عقبة متحركة واضحة
+        // عقبة متحركة
         const obsGeo = new THREE.BoxGeometry(1, 1, 1);
         const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
         const obstacle = new THREE.Mesh(obsGeo, obsMat);
@@ -76,7 +76,6 @@
             el.addEventListener('mouseup', onRelease);
         };
 
-        // ربط الاتجاهات الصحيحة للأزرار
         setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
@@ -89,11 +88,9 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // حركة اللاعب (اليمين يحرك يمين واليسار يحرك يسار)
             if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
             if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
 
-            // فيزياء القفز
             player.position.y += playerVelocityY;
             if (!isGrounded) {
                 playerVelocityY += gravity;
@@ -104,10 +101,9 @@
                 }
             }
 
-            // حركة العقبة نحو المكعب
             obstacle.position.z += 0.12;
             if (obstacle.position.z > 4) {
-                obstacle.position.z = -30; // إعادة العقبة للخلف
+                obstacle.position.z = -30;
             }
 
             camera.position.x = player.position.x * 0.4;
