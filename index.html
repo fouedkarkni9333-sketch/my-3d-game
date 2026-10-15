@@ -71,6 +71,8 @@
         .btn-fire:active { background: rgba(255, 0, 85, 0.7); color: white; box-shadow: 0 0 40px #ff0055; }
         .btn-time { width: 75px; height: 75px; background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700; color: #ffd700; text-shadow: 0 0 12px #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.5); font-size: 24px; }
         .btn-time:active { background: rgba(255, 215, 0, 0.7); color: white; box-shadow: 0 0 40px #ffd700; }
+        .btn-plasma { width: 75px; height: 75px; background: rgba(0, 255, 136, 0.2); border: 2px solid #00ff88; color: #00ff88; text-shadow: 0 0 12px #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.5); font-size: 24px; }
+        .btn-plasma:active { background: rgba(0, 255, 136, 0.7); color: black; box-shadow: 0 0 40px #00ff88; }
     </style>
 </head>
 <body>
@@ -189,6 +191,7 @@
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
         <div class="btn btn-time" id="btnTime">⏳</div>
+        <div class="btn btn-plasma" id="btnPlasma">🚀</div>
         <div class="btn btn-fire" id="btnFire">💥</div>
         <div class="btn" id="btnRight">▶</div>
     </div>
@@ -340,7 +343,7 @@
                 title: "CYBER HORIZON 6226", sub: "Absolute Quantum Consciousness Matrix", start: "INITIALIZE MATRIX",
                 c1: "Neon Unit", c1d: "Balanced Speed", c2: "Quantum Mecha", c2d: "High Durability", c3: "Warp Drone", c3d: "Anti-Gravity",
                 score: "Score", rank: "Rank", energy: "Quantum Energy", high: "High Score",
-                l1: "Sector 1: Neon Grid", l2: "Sector 2: Crimson Storm", l3: "Sector 3: Cosmic Awareness",
+                l1: "Sector 1: Neon Grid", l2: "Sector 2: Crimson Storm", l3: "Sector 3: Cosmic Awareness", l4: "Sector 4: Quantum Void",
                 r0: "Cyber Trainee", r1: "Galaxy Guardian", r2: "Dimension Commander", r3: "Absolute God",
                 go: "SYSTEM FAILURE!", final: "Final Score", restart: "REBOOT SYSTEM", newHigh: "🎉 New Quantum Record!"
             },
@@ -348,7 +351,7 @@
                 title: "سايبر هورايزون 6226", sub: "مصفوفة الوعي الكمومي المطلق", start: "تشغيل المصفوفة",
                 c1: "الوحدة النيونية", c1d: "تزامن ذكي فائق", c2: "المحارب الكمومي", c2d: "صلابة الأبعاد العليا", c3: "طائرة الزمكان", c3d: "انعدام الجاذبية الكلي",
                 score: "النقاط", rank: "الرتبة", energy: "طاقة الوعي", high: "أعلى نتيجة",
-                l1: "المستوى 1: قطاع النيون", l2: "المستوى 2: العاصفة الحمراء", l3: "المستوى 3: الوعي الكوني",
+                l1: "المستوى 1: قطاع النيون", l2: "المستوى 2: العاصفة الحمراء", l3: "المستوى 3: الوعي الكوني", l4: "المستوى 4: الفراغ الكمومي",
                 r0: "متدرب سبراني", r1: "حارس المجرة", r2: "قائد الأبعاد", r3: "إله الوعي المطلق",
                 go: "انهيار مصفوفة الوعي!", final: "النقاط النهائية", restart: "إعادة التشغيل", newHigh: "🎉 رقم قياسي جديد!"
             },
@@ -356,7 +359,7 @@
                 title: "CYBER HORIZON 6226", sub: "Matrice de Conscience Quantique", start: "INITIALISER",
                 c1: "Unité Néon", c1d: "Vitesse Équilibrée", c2: "Mécha Quantique", c2d: "Haute Durabilité", c3: "Drone Warp", c3d: "Anti-Gravité",
                 score: "Score", rank: "Rang", energy: "Énergie", high: "Meilleur",
-                l1: "Secteur 1: Grille Néon", l2: "Secteur 2: Tempête Pourpre", l3: "Secteur 3: Conscience Cosmique",
+                l1: "Secteur 1: Grille Néon", l2: "Secteur 2: Tempête Pourpre", l3: "Secteur 3: Conscience Cosmique", l4: "Secteur 4: Vide Quantique",
                 r0: "Stagiaire Cyber", r1: "Gardien Galactique", r2: "Commandant", r3: "Dieu Absolu",
                 go: "ÉCHEC DU SYSTÈME !", final: "Score Final", restart: "REDÉMARRER", newHigh: "🎉 Nouveau Record !"
             },
@@ -364,7 +367,7 @@
                 title: "CYBER HORIZON 6226", sub: "Matriz de Conciencia Cuántica", start: "INICIALIZAR",
                 c1: "Unidad Neón", c1d: "Velocidad Equilibrada", c2: "Mecha Cuántico", c2d: "Alta Durabilidad", c3: "Drone Warp", c3d: "Antigravedad",
                 score: "Puntuación", rank: "Rango", energy: "Energía", high: "Mejor",
-                l1: "Sector 1: Red Neón", l2: "Sector 2: Tormenta Carmesí", l3: "Sector 3: Conciencia Cósmica",
+                l1: "Sector 1: Red Neón", l2: "Sector 2: Tormenta Carmesí", l3: "Sector 3: Conciencia Cósmica", l4: "Sector 4: Vacío Cuántico",
                 r0: "Trecario Cyber", r1: "Guardián Galáctico", r2: "Comandante", r3: "Dios Absoluto",
                 go: "¡FALLO DEL SISTEMA!", final: "Puntuación Final", restart: "REINICIAR", newHigh: "🎉 ¡Nuevo Récord!"
             },
@@ -372,7 +375,7 @@
                 title: "CYBER HORIZON 6226", sub: "Quanten-Bewusstseins-Matrix", start: "STARTEN",
                 c1: "Neon-Einheit", c1d: "Ausgeglichene Speed", c2: "Quanten-Mecha", c2d: "Hohe Haltbarkeit", c3: "Warp-Drohne", c3d: "Antigravitation",
                 score: "Punktzahl", rank: "Rang", energy: "Energie", high: "Bestwert",
-                l1: "Sektor 1: Neon-Gitter", l2: "Sektor 2: Purpurner Sturm", l3: "Sektor 3: Kosmisches Bewusstsein",
+                l1: "Sektor 1: Neon-Gitter", l2: "Sektor 2: Purpurner Sturm", l3: "Sektor 3: Kosmisches Bewusstsein", l4: "Sektor 4: Quanten-Leere",
                 r0: "Cyber-Azubi", r1: "Galaxie-Wächter", r2: "Dimensions-Kommandant", r3: "Absoluter Gott",
                 go: "SYSTEMFEHLER!", final: "Endpunktzahl", restart: "NEustart", newHigh: "🎉 Neuer Rekord!"
             },
@@ -380,7 +383,7 @@
                 title: "サイバーホライゾン 6226", sub: "絶対量子意識マトリックス", start: "マトリックス起動",
                 c1: "ネオンユニット", c1d: "バランス型", c2: "量子メカ", c2d: "高耐久", c3: "ワープドローン", c3d: "反重力",
                 score: "スコア", rank: "ランク", energy: "量子エネルギー", high: "ハイスコア",
-                l1: "セクター1: ネオングリッド", l2: "セクター2: 紅の嵐", l3: "セクター3: 宇宙意識",
+                l1: "セクター1: ネオングリッド", l2: "セクター2: 紅の嵐", l3: "セクター3: 宇宙意識", l4: "セクター4: 量子の虚無",
                 r0: "サイバー研修生", r1: "銀河の守護者", r2: "次元司令官", r3: "絶対神",
                 go: "システムエラー！", final: "最終スコア", restart: "再起動", newHigh: "🎉 新記録達成！"
             },
@@ -388,7 +391,7 @@
                 title: "CYBER HORIZON 6226", sub: "Квантовая матрица сознания", start: "ЗАПУСК",
                 c1: "Неоновый юнит", c1d: "Баланс скорости", c2: "Квантовый мех", c2d: "Прочность", c3: "Варп-дрон", c3d: "Антигравитация",
                 score: "Счет", rank: "Ранг", energy: "Энергия", high: "Рекорд",
-                l1: "Сектор 1: Неон", l2: "Сектор 2: Багровый шторм", l3: "Сектор 3: Космос",
+                l1: "Сектор 1: Неон", l2: "Сектор 2: Багровый шторм", l3: "Сектор 3: Космос", l4: "Сектор 4: Пустота",
                 r0: "Стажер", r1: "Страж галактики", r2: "Командир", r3: "Абсолютный бог",
                 go: "СБОЙ СИСТЕМЫ!", final: "Итог", restart: "ПЕРЕЗАГРУЗКА", newHigh: "🎉 Новый рекорд!"
             },
@@ -396,7 +399,7 @@
                 title: "赛博地平线 6226", sub: "绝对量子意识矩阵", start: "启动矩阵",
                 c1: "霓虹单位", c1d: "平衡速度", c2: "量子机甲", c2d: "高耐久", c3: "跃迁无人机", c3d: "反重力",
                 score: "得分", rank: "军衔", energy: "量子能量", high: "最高分",
-                l1: "第一区：霓虹网格", l2: "第二区：赤红风暴", l3: "第三区：宇宙意识",
+                l1: "第一区：霓虹网格", l2: "第二区：赤红风暴", l3: "第三区：宇宙意识", l4: "第四区：量子虚空",
                 r0: "赛博学员", r1: "银河守护者", r2: "维度指挥官", r3: "绝对神明",
                 go: "系统崩溃！", final: "最终得分", restart: "重新启动", newHigh: "🎉 新纪录！"
             }
@@ -565,6 +568,15 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 osc.start(now);
                 osc.stop(now + 0.25);
+            } else if (type === 'plasma') {
+                if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.3);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
             } else if (type === 'levelup' || type === 'rankup') {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 osc.type = 'square';
@@ -768,6 +780,7 @@
             const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
             obstacle.position.set(randomX, 0.3, zPos);
+            obstacle.userData = { isSmartAI: Math.random() > 0.6 }; // ذكاء اصطناعي للأعداء يتبع اللاعب
             scene.add(obstacle);
             obstacles.push(obstacle);
         }
@@ -836,6 +849,7 @@
             if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = true;
             if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') handleJump();
             if (e.code === 'KeyT' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') triggerTimeWarp();
+            if (e.code === 'KeyP') firePlasmaMissile();
             if (e.code === 'KeyF' || e.code === 'Enter') fireQuantumPulse();
         });
 
@@ -869,6 +883,27 @@
         const timeBtn = document.getElementById('btnTime');
         timeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerTimeWarp(); });
         timeBtn.addEventListener('mousedown', triggerTimeWarp);
+
+        // سلاح جديد: صواريخ البلازما المتطورة لتطهير المسار
+        function firePlasmaMissile() {
+            if (isGameOver || quantumEnergy < 35) return;
+            playSound('plasma');
+            quantumEnergy -= 35;
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                if (obs.position.z < 0 && obs.position.z > -40) {
+                    obs.position.z = -100;
+                    obs.position.x = (Math.random() - 0.5) * 3;
+                    score += 35;
+                    updateScoreDisplay();
+                }
+            }
+        }
+
+        const plasmaBtn = document.getElementById('btnPlasma');
+        plasmaBtn.addEventListener('touchstart', (e) => { e.preventDefault(); firePlasmaMissile(); });
+        plasmaBtn.addEventListener('mousedown', firePlasmaMissile);
 
         function fireQuantumPulse() {
             if (isGameOver || quantumEnergy < 100) return;
@@ -905,11 +940,12 @@
 
             if (score < 50) currentLevel = 1;
             else if (score >= 50 && score < 150) currentLevel = 2;
-            else currentLevel = 3;
+            else if (score >= 150 && score < 300) currentLevel = 3;
+            else currentLevel = 4; // مرحلة جديدة مطورة
 
-            if (score >= 300) currentRankIndex = 3;
-            else if (score >= 150) currentRankIndex = 2;
-            else if (score >= 50) currentRankIndex = 1;
+            if (score >= 400) currentRankIndex = 3;
+            else if (score >= 200) currentRankIndex = 2;
+            else if (score >= 80) currentRankIndex = 1;
             else currentRankIndex = 0;
 
             let rankKeys = ['r0', 'r1', 'r2', 'r3'];
@@ -932,10 +968,15 @@
                     rightLine.material.color.setHex(0xffd700);
                     particleMat.color.setHex(0xffd700);
                     sunLight.color.setHex(0xffaa00);
+                } else if (currentLevel === 4) {
+                    leftLine.material.color.setHex(0x00ff88);
+                    rightLine.material.color.setHex(0x00ff88);
+                    particleMat.color.setHex(0x00ff88);
+                    sunLight.color.setHex(0x00ffaa);
                 }
             }
 
-            let levelKeys = { 1: t.l1, 2: t.l2, 3: t.l3 };
+            let levelKeys = { 1: t.l1, 2: t.l2, 3: t.l3, 4: t.l4 };
 
             document.getElementById('leftPanel').innerHTML = `
                 ${t.score || 'Score'}: <span id="scoreVal">${score}</span><br>
@@ -1003,7 +1044,7 @@
                 while (accumulator >= fixedTimeStep) {
                     animationTime += 0.15;
 
-                    if (currentLevel === 3) {
+                    if (currentLevel >= 3) {
                         gravityAngle += 0.012;
                         scene.rotation.z = Math.sin(gravityAngle) * 0.07;
                     } else {
@@ -1072,9 +1113,16 @@
                         obs.rotation.x += 0.05;
                         obs.rotation.y += 0.06;
 
+                        // تحسين الذكاء الاصطناعي للأعداء: العدو يلحق حركة اللاعب ببطء إذا كان ذكياً
+                        if (obs.userData && obs.userData.isSmartAI && obs.position.z < 0 && obs.position.z > -40) {
+                            if (obs.position.x < player.position.x) obs.position.x += 0.012;
+                            else if (obs.position.x > player.position.x) obs.position.x -= 0.012;
+                        }
+
                         if (obs.position.z > 4) {
                             obs.position.z = -80;
                             obs.position.x = (Math.random() - 0.5) * 3;
+                            obs.userData = { isSmartAI: Math.random() > 0.6 };
                             score += 5;
                             baseGameSpeed += 0.0016;
                             if (boostTimer === 0) gameSpeed = baseGameSpeed;
@@ -1103,6 +1151,14 @@
                                     highScore = score;
                                     localStorage.setItem('futureGameHighScore', highScore);
                                     isNewHighScore = true;
+                                    
+                                    // حفظ النتيجة في قاعدة البيانات عبر السيرفر (Database Score Saving)
+                                    if (socket) {
+                                        socket.emit('save_score', { 
+                                            playerName: document.getElementById('playerNameInput').value.trim() || "Player", 
+                                            score: highScore 
+                                        });
+                                    }
                                 }
 
                                 document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
