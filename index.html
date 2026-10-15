@@ -780,7 +780,7 @@
             const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
             obstacle.position.set(randomX, 0.3, zPos);
-            obstacle.userData = { isSmartAI: Math.random() > 0.6 }; // ذكاء اصطناعي للأعداء يتبع اللاعب
+            obstacle.userData = { isSmartAI: Math.random() > 0.6 };
             scene.add(obstacle);
             obstacles.push(obstacle);
         }
@@ -884,7 +884,6 @@
         timeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerTimeWarp(); });
         timeBtn.addEventListener('mousedown', triggerTimeWarp);
 
-        // سلاح جديد: صواريخ البلازما المتطورة لتطهير المسار
         function firePlasmaMissile() {
             if (isGameOver || quantumEnergy < 35) return;
             playSound('plasma');
@@ -941,7 +940,7 @@
             if (score < 50) currentLevel = 1;
             else if (score >= 50 && score < 150) currentLevel = 2;
             else if (score >= 150 && score < 300) currentLevel = 3;
-            else currentLevel = 4; // مرحلة جديدة مطورة
+            else currentLevel = 4;
 
             if (score >= 400) currentRankIndex = 3;
             else if (score >= 200) currentRankIndex = 2;
@@ -1029,6 +1028,7 @@
         let lastTime = 0;
         const fixedTimeStep = 1 / 60;
         let accumulator = 0;
+        let maxSubSteps = 5; // حماية ضد التجمد من خلال وضع حد أقصى لعدد الحلقات في الإطار الواحد
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
@@ -1036,12 +1036,15 @@
             if (!lastTime) lastTime = currentTime;
             let deltaTime = (currentTime - lastTime) / 1000;
             lastTime = currentTime;
-            if (deltaTime > 0.25) deltaTime = 0.25;
+            
+            // تحديد أقصى مدة للفرق الزمني لمنع التراكم الهائل عند انخفاض الأداء أو التبديل بين التبويبات
+            if (deltaTime > 0.1) deltaTime = 0.1;
 
             accumulator += deltaTime;
 
             if (!isGameOver) {
-                while (accumulator >= fixedTimeStep) {
+                let subSteps = 0;
+                while (accumulator >= fixedTimeStep && subSteps < maxSubSteps) {
                     animationTime += 0.15;
 
                     if (currentLevel >= 3) {
@@ -1113,7 +1116,6 @@
                         obs.rotation.x += 0.05;
                         obs.rotation.y += 0.06;
 
-                        // تحسين الذكاء الاصطناعي للأعداء: العدو يلحق حركة اللاعب ببطء إذا كان ذكياً
                         if (obs.userData && obs.userData.isSmartAI && obs.position.z < 0 && obs.position.z > -40) {
                             if (obs.position.x < player.position.x) obs.position.x += 0.012;
                             else if (obs.position.x > player.position.x) obs.position.x -= 0.012;
@@ -1152,7 +1154,6 @@
                                     localStorage.setItem('futureGameHighScore', highScore);
                                     isNewHighScore = true;
                                     
-                                    // حفظ النتيجة في قاعدة البيانات عبر السيرفر (Database Score Saving)
                                     if (socket) {
                                         socket.emit('save_score', { 
                                             playerName: document.getElementById('playerNameInput').value.trim() || "Player", 
@@ -1205,6 +1206,12 @@
                     }
 
                     accumulator -= fixedTimeStep;
+                    subSteps++;
+                }
+
+                // إذا حدث تراكم كبير وتم تجاوز الحد الأقصى، يتم تفريغ الaccumulator لتفادي التجميد الكلي
+                if (accumulator >= fixedTimeStep) {
+                    accumulator = 0;
                 }
 
                 for (let id in remotePlayers) {
