@@ -142,3 +142,111 @@
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
             if(!el) return;
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); });
+            el.addEventListener('mousedown', onPress);
+            el.addEventListener('mouseup', onRelease);
+        };
+
+        setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
+        setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
+        setupBtn('btnJump', () => {
+            if (isGrounded && !isGameOver) {
+                playerVelocityY = 0.25;
+                isGrounded = false;
+                playSound('jump'); // تشغيل صوت القفز
+            }
+        }, () => {});
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreBoard').innerHTML = 
+                `النقاط: ${score}<br><span style="font-size: 16px; color: #ffd700;">أعلى نتيجة: ${highScore}</span>`;
+        }
+
+        function resetGame() {
+            isGameOver = false;
+            score = 0;
+            gameSpeed = 0.12;
+            currentSkyIndex = 0;
+            scene.background.setHex(skyColors[0]);
+            player.position.set(0, 0, 0);
+            
+            obstacles[0].position.set(0, 0, -25);
+            obstacles[1].position.set(0, 0, -45);
+            obstacles[2].position.set(0, 0, -65);
+
+            updateScoreDisplay();
+            document.getElementById('gameOverScreen').style.display = 'none';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isGameOver) {
+                if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
+                if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
+
+                player.position.y += playerVelocityY;
+                if (!isGrounded) {
+                    playerVelocityY += gravity;
+                    if (player.position.y <= 0) {
+                        player.position.y = 0;
+                        playerVelocityY = 0;
+                        isGrounded = true;
+                    }
+                }
+
+                for (let i = 0; i < obstacles.length; i++) {
+                    let obs = obstacles[i];
+                    obs.position.z += gameSpeed;
+
+                    if (obs.position.z > 4) {
+                        obs.position.z = -70;
+                        obs.position.x = (Math.random() - 0.5) * 3;
+                        score += 5;
+                        gameSpeed += 0.002;
+                        updateScoreDisplay();
+
+                        let newSkyIndex = Math.floor(score / 30) % skyColors.length;
+                        if (newSkyIndex !== currentSkyIndex) {
+                            currentSkyIndex = newSkyIndex;
+                            scene.background.setHex(skyColors[currentSkyIndex]);
+                        }
+                    }
+
+                    // فحص الاصطدام
+                    if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
+                        Math.abs(player.position.x - obs.position.x) < 0.8 &&
+                        player.position.y < 0.6) {
+                        isGameOver = true;
+                        playSound('crash'); // تشغيل صوت الاصطدام
+
+                        let isNewHighScore = false;
+                        if (score > highScore) {
+                            highScore = score;
+                            localStorage.setItem('threeGameHighScore', highScore);
+                            isNewHighScore = true;
+                        }
+
+                        document.getElementById('finalScore').innerText = "نقاطك النهائية: " + score;
+                        document.getElementById('highScoreMsg').innerText = isNewHighScore ? "🎉 رقم قياسي جديد!" : "أعلى نتيجة: " + highScore;
+                        document.getElementById('gameOverScreen').style.display = 'flex';
+                        document.getElementById('highScoreDisplay').innerText = highScore;
+                    }
+                }
+
+                camera.position.x = player.position.x * 0.4;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
