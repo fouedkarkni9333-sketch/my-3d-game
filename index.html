@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المستقبل 2226 - Cyberpunk Runner</title>
+    <title>لعبة المستقبل 2226 - Cyberpunk City</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #0b031b; font-family: Tahoma, sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background: #05020d; font-family: Tahoma, sans-serif; user-select: none; }
         #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: #00ffff; font-size: 22px; font-weight: bold; text-shadow: 0 0 10px #00ffff, 2px 2px 4px black; z-index: 10; line-height: 1.5; }
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 2, 15, 0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; backdrop-filter: blur(8px); }
         #gameOverScreen h1 { font-size: 38px; margin-bottom: 10px; color: #ff0055; text-shadow: 0 0 15px #ff0055; }
@@ -94,40 +94,59 @@
         }
 
         const scene = new THREE.Scene();
-        let fogColor = 0x050212;
+        let fogColor = 0x05020d;
         scene.background = new THREE.Color(fogColor);
-        scene.fog = new THREE.FogExp2(fogColor, 0.02); // ضباب مستقبلي داكن
+        scene.fog = new THREE.FogExp2(fogColor, 0.018); // ضباب نيون بنفسجي داكن
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // --- إضاءة مستقبلية (نيون) ---
-        const ambientLight = new THREE.AmbientLight(0x221144, 0.8);
+        // --- إضاءة مستقبلية ---
+        const ambientLight = new THREE.AmbientLight(0x221144, 1.0);
         scene.add(ambientLight);
 
-        const neonLight1 = new THREE.PointLight(0x00ffff, 2, 50);
-        neonLight1.position.set(0, 5, -10);
-        scene.add(neonLight1);
+        const neonLight = new THREE.PointLight(0x00ffff, 2, 60);
+        neonLight.position.set(0, 5, -10);
+        scene.add(neonLight);
 
-        const sunLight = new THREE.DirectionalLight(0x9900ff, 1.5);
-        sunLight.position.set(5, 15, 5);
-        sunLight.castShadow = true;
+        const sunLight = new THREE.DirectionalLight(0xaa00ff, 1.5);
+        sunLight.position.set(10, 20, 10);
         scene.add(sunLight);
 
+        // --- ناطحات السحاب في مدينة المستقبل (Cyberpunk Buildings) ---
+        let buildings = [];
+        const buildingGeo = new THREE.BoxGeometry(4, 30, 6);
+        const buildingMat = new THREE.MeshStandardMaterial({ color: 0x0a0614, metalness: 0.9, roughness: 0.2 });
+
+        function createCityScrapers() {
+            for (let i = 0; i < 15; i++) {
+                // مباني الجانب الأيمن
+                let bRight = new THREE.Mesh(buildingGeo, buildingMat);
+                bRight.position.set(10 + Math.random() * 5, 10, -i * 15);
+                scene.add(bRight);
+                buildings.push(bRight);
+
+                // مباني الجانب الأيسر
+                let bLeft = new THREE.Mesh(buildingGeo, buildingMat);
+                bLeft.position.set(-(10 + Math.random() * 5), 10, -i * 15);
+                scene.add(bLeft);
+                buildings.push(bLeft);
+            }
+        }
+        createCityScrapers();
+
         // --- منصة طائرة مستقبلية ---
-        const groundGeo = new THREE.BoxGeometry(6, 0.6, 100);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111122, metalness: 0.9, roughness: 0.1 });
+        const groundGeo = new THREE.BoxGeometry(6, 0.6, 120);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x0f0c1b, metalness: 0.9, roughness: 0.1 });
         const platform = new THREE.Mesh(groundGeo, groundMat);
         platform.position.set(0, -1, -30);
-        platform.receiveShadow = true;
         scene.add(platform);
 
         // خطوط نيون مضيئة على جوانب الأرضية
-        const lineGeo = new THREE.BoxGeometry(0.1, 0.7, 100);
+        const lineGeo = new THREE.BoxGeometry(0.12, 0.7, 120);
         const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
         const leftLine = new THREE.Mesh(lineGeo, lineMat);
         leftLine.position.set(-3, -0.9, -30);
@@ -136,14 +155,13 @@
         rightLine.position.set(3, -0.9, -30);
         scene.add(rightLine);
 
-        // --- تصميم الشخصية (روبوت مستقبلي عالي التقنية) ---
+        // --- تصميم الشخصية (روبوت مستقبلي متطور) ---
         const player = new THREE.Group();
 
         const bodyGeo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.8, roughness: 0.2 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.y = 0.35;
-        bodyMesh.castShadow = true;
         player.add(bodyMesh);
 
         // صدر مضيء بطاقة النيون
@@ -157,10 +175,9 @@
         const headMat = new THREE.MeshStandardMaterial({ color: 0x222244, metalness: 0.9, roughness: 0.1 });
         const headMesh = new THREE.Mesh(headGeo, headMat);
         headMesh.position.y = 0.85;
-        headMesh.castShadow = true;
         player.add(headMesh);
 
-        // عيون ليزرية متوهجة باللون الوردي المستقبلي
+        // قناع عيون ليزري متوهج باللون الوردي المستقبلي
         const eyeGeo = new THREE.BoxGeometry(0.35, 0.08, 0.05);
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
         const visor = new THREE.Mesh(eyeGeo, eyeMat);
@@ -202,7 +219,6 @@
             const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
             obstacle.position.set(randomX, 0.3, zPos);
-            obstacle.castShadow = true;
             scene.add(obstacle);
             obstacles.push(obstacle);
         }
@@ -211,7 +227,7 @@
         spawnObstacle(-45);
         spawnObstacle(-65);
 
-        // --- عناصر طاقة مستقبلية (Data Crystals & Quantum Boost) ---
+        // --- عناصر طاقة مستقبلية ---
         let collectibles = [];
         const crystalGeo = new THREE.OctahedronGeometry(0.4);
         const crystalMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.9, roughness: 0.1, emissive: 0x004444 }); 
@@ -225,7 +241,6 @@
             item.userData = { type: isBoost ? 'boost' : 'star' };
             const randomX = (Math.random() - 0.5) * 3;
             item.position.set(randomX, 0.6, zPos);
-            item.castShadow = true;
             scene.add(item);
             collectibles.push(item);
         }
@@ -318,6 +333,14 @@
                     headMesh.position.y = 0.85 + Math.cos(animationTime * 2.5) * 0.03;
                 }
 
+                // تحريك المباني لتوضيح حركة التقدم في المدينة
+                for (let i = 0; i < buildings.length; i++) {
+                    buildings[i].position.z += gameSpeed * 0.5;
+                    if (buildings[i].position.z > 10) {
+                        buildings[i].position.z = -150;
+                    }
+                }
+
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
                     obs.position.z += gameSpeed;
@@ -325,7 +348,7 @@
                     obs.rotation.y += 0.04;
 
                     if (obs.position.z > 4) {
-                        obs.position.z = -70;
+                        obs.position.z = -80;
                         obs.position.x = (Math.random() - 0.5) * 3;
                         score += 5;
                         baseGameSpeed += 0.001;
@@ -360,7 +383,7 @@
                     item.rotation.z += 0.05;
 
                     if (item.position.z > 4) {
-                        item.position.z = -60;
+                        item.position.z = -70;
                         item.position.x = (Math.random() - 0.5) * 3;
                     }
 
@@ -377,7 +400,7 @@
                         }
                         updateScoreDisplay();
 
-                        item.position.z = -60;
+                        item.position.z = -70;
                         item.position.x = (Math.random() - 0.5) * 3;
                     }
                 }
