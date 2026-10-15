@@ -3,23 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المستقبل 2226 - Cyberpunk City</title>
+    <title>لعبة المستقبل 2226 - الهنجار ومتجر الشخصيات</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #05020d; font-family: Tahoma, sans-serif; user-select: none; }
-        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: #00ffff; font-size: 22px; font-weight: bold; text-shadow: 0 0 10px #00ffff, 2px 2px 4px black; z-index: 10; line-height: 1.5; }
+        body { margin: 0; overflow: hidden; background: #05020d; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
+        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: #00ffff; font-size: 19px; font-weight: bold; text-shadow: 0 0 10px #00ffff, 2px 2px 4px black; z-index: 10; line-height: 1.4; display: none; }
+        #levelIndicator { font-size: 14px; color: #ff0055; text-shadow: 0 0 8px #ff0055; }
+        #energyContainer { width: 200px; height: 12px; background: rgba(255,255,255,0.2); border: 2px solid #00ffff; border-radius: 6px; margin: 5px auto; overflow: hidden; box-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055); transition: width 0.2s ease; }
+        
+        /* شاشة الهنجار واختيار الشخصيات */
+        #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 2, 15, 0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(10px); }
+        #hangarScreen h1 { font-size: 42px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 20px #00ffff; }
+        #hangarScreen p { font-size: 18px; color: #ff0055; margin-bottom: 25px; text-shadow: 0 0 10px #ff0055; }
+        .character-options { display: flex; gap: 20px; margin-bottom: 30px; }
+        .char-card { width: 130px; padding: 15px; background: rgba(255,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(0,255,255,0.1); }
+        .char-card:hover, .char-card.selected { border-color: #00ffff; background: rgba(0,255,255,0.15); box-shadow: 0 0 20px #00ffff; transform: scale(1.08); }
+        .char-card h3 { font-size: 16px; margin: 10px 0 5px 0; color: #fff; }
+        .char-card span { font-size: 12px; color: #888; }
+        #startBtn { padding: 14px 40px; font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 25px rgba(0,255,255,0.6); transition: 0.3s; }
+        #startBtn:hover { transform: scale(1.05); }
+
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 2, 15, 0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; backdrop-filter: blur(8px); }
         #gameOverScreen h1 { font-size: 38px; margin-bottom: 10px; color: #ff0055; text-shadow: 0 0 15px #ff0055; }
         #restartBtn { padding: 12px 35px; font-size: 20px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 20px rgba(0,255,255,0.5); margin-top: 15px; transition: 0.3s; }
         #restartBtn:hover { transform: scale(1.05); }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; direction: ltr; }
-        .btn { width: 75px; height: 75px; background: rgba(0, 255, 255, 0.15); border: 2px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #00ffff; font-weight: bold; text-shadow: 0 0 10px #00ffff; touch-action: manipulation; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 15px; direction: ltr; align-items: center; display: none; }
+        .btn { width: 70px; height: 70px; background: rgba(0, 255, 255, 0.15); border: 2px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #00ffff; font-weight: bold; text-shadow: 0 0 10px #00ffff; touch-action: manipulation; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
         .btn:active { background: rgba(0, 255, 255, 0.5); color: #000; box-shadow: 0 0 25px #00ffff; }
+        .btn-fire { width: 75px; height: 75px; background: rgba(255, 0, 85, 0.2); border: 2px solid #ff0055; color: #ff0055; text-shadow: 0 0 10px #ff0055; box-shadow: 0 0 15px rgba(255,0,85,0.4); font-size: 24px; }
+        .btn-fire:active { background: rgba(255, 0, 85, 0.6); color: white; box-shadow: 0 0 30px #ff0055; }
     </style>
 </head>
 <body>
+    <!-- شاشة اختيار الشخصيات (Hangar) -->
+    <div id="hangarScreen">
+        <h1>هنجار سنة 2226</h1>
+        <p>اختر وحدتك القتالية للانطلاق في الفضاء السيبراني</p>
+        <div class="character-options">
+            <div class="char-card selected" onclick="selectCharacter(0, this)">
+                <div style="font-size: 35px;">🤖</div>
+                <h3>روبوت الاستطلاع</h3>
+                <span>سريع ومتوازن</span>
+            </div>
+            <div class="char-card" onclick="selectCharacter(1, this)">
+                <div style="font-size: 35px;">🦾</div>
+                <h3>المحارب القتالي</h3>
+                <span>قوة تحمل عالية</span>
+            </div>
+            <div class="char-card" onclick="selectCharacter(2, this)">
+                <div style="font-size: 35px;">🛸</div>
+                <h3>مركبة الدرون</h3>
+                <span>طيران رشيق</span>
+            </div>
+        </div>
+        <button id="startBtn" onclick="startGame()">تشغيل النظام وانطلاق</button>
+    </div>
+
     <div id="scoreBoard">
-        النقاط: 0<br>
-        <span style="font-size: 16px; color: #ff0055; text-shadow: 0 0 8px #ff0055;">سنة 2226 | أعلى نتيجة: <span id="highScoreDisplay">0</span></span>
+        النقاط: <span id="scoreVal">0</span> | <span id="levelIndicator">المستوى 1: قطاع النيون الأزرق</span><br>
+        شريط طاقة الكم:
+        <div id="energyContainer"><div id="energyBar"></div></div>
+        <span style="font-size: 14px; color: #ffd700;">أعلى نتيجة: <span id="highScoreDisplay">0</span></span>
     </div>
 
     <!-- شاشة الخسارة -->
@@ -31,15 +75,23 @@
     </div>
 
     <!-- أزرار التحكم -->
-    <div class="controls">
+    <div class="controls" id="gameControls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
+        <div class="btn btn-fire" id="btnFire">💥</div>
         <div class="btn" id="btnRight">▶</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // نظام أصوات السايبربانك (Web Audio API)
+        let selectedCharType = 0; // 0: روبوت, 1: محارب, 2: درون
+        function selectCharacter(type, el) {
+            selectedCharType = type;
+            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // نظام الأصوات
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -55,7 +107,6 @@
             let gainNode = audioCtx.createGain();
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-
             let now = audioCtx.currentTime;
 
             if (type === 'jump') {
@@ -90,13 +141,29 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 osc.start(now);
                 osc.stop(now + 0.25);
+            } else if (type === 'laser') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.25);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'levelup') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.3);
+                gainNode.gain.setValueAtTime(0.4, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
             }
         }
 
         const scene = new THREE.Scene();
         let fogColor = 0x05020d;
         scene.background = new THREE.Color(fogColor);
-        scene.fog = new THREE.FogExp2(fogColor, 0.018); // ضباب نيون بنفسجي داكن
+        scene.fog = new THREE.FogExp2(fogColor, 0.018);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -104,32 +171,42 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // --- إضاءة مستقبلية ---
         const ambientLight = new THREE.AmbientLight(0x221144, 1.0);
         scene.add(ambientLight);
 
-        const neonLight = new THREE.PointLight(0x00ffff, 2, 60);
+        const neonLight = new THREE.PointLight(0x00ffff, 2.5, 60);
         neonLight.position.set(0, 5, -10);
         scene.add(neonLight);
 
-        const sunLight = new THREE.DirectionalLight(0xaa00ff, 1.5);
+        const sunLight = new THREE.DirectionalLight(0xaa00ff, 1.8);
         sunLight.position.set(10, 20, 10);
         scene.add(sunLight);
 
-        // --- ناطحات السحاب في مدينة المستقبل (Cyberpunk Buildings) ---
+        // جزيئات النيون
+        const particleCount = 600;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 40;
+            particlePositions[i + 1] = Math.random() * 20;
+            particlePositions[i + 2] = (Math.random() - 0.5) * 150;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({ color: 0x00ffff, size: 0.3, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const starField = new THREE.Points(particleGeo, particleMat);
+        scene.add(starField);
+
+        // ناطحات السحاب
         let buildings = [];
         const buildingGeo = new THREE.BoxGeometry(4, 30, 6);
-        const buildingMat = new THREE.MeshStandardMaterial({ color: 0x0a0614, metalness: 0.9, roughness: 0.2 });
-
+        const buildingMat = new THREE.MeshStandardMaterial({ color: 0x0a0614, metalness: 0.9, roughness: 0.2, emissive: 0x110022 });
         function createCityScrapers() {
             for (let i = 0; i < 15; i++) {
-                // مباني الجانب الأيمن
                 let bRight = new THREE.Mesh(buildingGeo, buildingMat);
                 bRight.position.set(10 + Math.random() * 5, 10, -i * 15);
                 scene.add(bRight);
                 buildings.push(bRight);
 
-                // مباني الجانب الأيسر
                 let bLeft = new THREE.Mesh(buildingGeo, buildingMat);
                 bLeft.position.set(-(10 + Math.random() * 5), 10, -i * 15);
                 scene.add(bLeft);
@@ -138,14 +215,13 @@
         }
         createCityScrapers();
 
-        // --- منصة طائرة مستقبلية ---
+        // الأرضية
         const groundGeo = new THREE.BoxGeometry(6, 0.6, 120);
         const groundMat = new THREE.MeshStandardMaterial({ color: 0x0f0c1b, metalness: 0.9, roughness: 0.1 });
         const platform = new THREE.Mesh(groundGeo, groundMat);
         platform.position.set(0, -1, -30);
         scene.add(platform);
 
-        // خطوط نيون مضيئة على جوانب الأرضية
         const lineGeo = new THREE.BoxGeometry(0.12, 0.7, 120);
         const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
         const leftLine = new THREE.Mesh(lineGeo, lineMat);
@@ -155,38 +231,85 @@
         rightLine.position.set(3, -0.9, -30);
         scene.add(rightLine);
 
-        // --- تصميم الشخصية (روبوت مستقبلي متطور) ---
-        const player = new THREE.Group();
+        // بناء مجموعة اللاعب ديناميكياً حسب الاختيار
+        let player = new THREE.Group();
+        let bodyMesh, headMesh;
 
-        const bodyGeo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.8, roughness: 0.2 });
-        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-        bodyMesh.position.y = 0.35;
-        player.add(bodyMesh);
+        function buildPlayerModel() {
+            // تفريغ اللاعب القديم إن وجد
+            while(player.children.length > 0){ 
+                player.remove(player.children[0]); 
+            }
 
-        // صدر مضيء بطاقة النيون
-        const coreGeo = new THREE.BoxGeometry(0.3, 0.3, 0.45);
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-        coreMesh.position.set(0, 0.35, 0);
-        player.add(coreMesh);
+            if (selectedCharType === 0) {
+                // روبوت الاستطلاع (أزرق نيون)
+                const bodyGeo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.8, roughness: 0.2 });
+                bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                bodyMesh.position.y = 0.35;
+                player.add(bodyMesh);
 
-        const headGeo = new THREE.BoxGeometry(0.45, 0.4, 0.4);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0x222244, metalness: 0.9, roughness: 0.1 });
-        const headMesh = new THREE.Mesh(headGeo, headMat);
-        headMesh.position.y = 0.85;
-        player.add(headMesh);
+                const coreGeo = new THREE.BoxGeometry(0.3, 0.3, 0.45);
+                const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+                coreMesh.position.set(0, 0.35, 0);
+                player.add(coreMesh);
 
-        // قناع عيون ليزري متوهج باللون الوردي المستقبلي
-        const eyeGeo = new THREE.BoxGeometry(0.35, 0.08, 0.05);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
-        const visor = new THREE.Mesh(eyeGeo, eyeMat);
-        visor.position.set(0, 0.88, 0.21);
-        player.add(visor);
+                const headGeo = new THREE.BoxGeometry(0.45, 0.4, 0.4);
+                const headMat = new THREE.MeshStandardMaterial({ color: 0x222244, metalness: 0.9, roughness: 0.1 });
+                headMesh = new THREE.Mesh(headGeo, headMat);
+                headMesh.position.y = 0.85;
+                player.add(headMesh);
 
-        player.position.set(0, 0, 0);
+                const eyeGeo = new THREE.BoxGeometry(0.35, 0.08, 0.05);
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+                const visor = new THREE.Mesh(eyeGeo, eyeMat);
+                visor.position.set(0, 0.88, 0.21);
+                player.add(visor);
+
+            } else if (selectedCharType === 1) {
+                // المحارب القتالي (أحمر نيري قوي)
+                const bodyGeo = new THREE.BoxGeometry(0.6, 0.7, 0.5);
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3d0c11, metalness: 0.9, roughness: 0.1 });
+                bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                bodyMesh.position.y = 0.35;
+                player.add(bodyMesh);
+
+                const coreGeo = new THREE.BoxGeometry(0.4, 0.25, 0.52);
+                const coreMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+                const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+                coreMesh.position.set(0, 0.35, 0);
+                player.add(coreMesh);
+
+                const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.45);
+                const headMat = new THREE.MeshStandardMaterial({ color: 0x5a181e, metalness: 0.9 });
+                headMesh = new THREE.Mesh(headGeo, headMat);
+                headMesh.position.y = 0.85;
+                player.add(headMesh);
+
+                const eyeGeo = new THREE.BoxGeometry(0.4, 0.06, 0.05);
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                const visor = new THREE.Mesh(eyeGeo, eyeMat);
+                visor.position.set(0, 0.88, 0.23);
+                player.add(visor);
+
+            } else {
+                // مركبة الدرون الطائرة (شكل قرص فضائي)
+                const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16);
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.1 });
+                bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                bodyMesh.position.y = 0.4;
+                player.add(bodyMesh);
+
+                const coreGeo = new THREE.SphereGeometry(0.25, 16, 16);
+                const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                headMesh = new THREE.Mesh(coreGeo, coreMat);
+                headMesh.position.y = 0.55;
+                player.add(headMesh);
+            }
+        }
+
         scene.add(player);
-
         camera.position.set(0, 2.2, 4.5);
         camera.lookAt(player.position);
 
@@ -196,16 +319,18 @@
         const gravity = -0.018;
         
         let score = 0;
+        let currentLevel = 1;
         let baseGameSpeed = 0.13;
         let gameSpeed = baseGameSpeed;
-        let isGameOver = false;
+        let isGameOver = true; // تبدأ اللعبة متوقفة حتى يضغط المستخدم على ابدأ
         let boostTimer = 0;
+        let quantumEnergy = 0;
         let animationTime = 0;
 
         let highScore = localStorage.getItem('futureGameHighScore') || 0;
         document.getElementById('highScoreDisplay').innerText = highScore;
 
-        // --- عوائق تكنولوجية مستقبلية ---
+        // العوائق
         let obstacles = [];
         const obsGeos = [
             new THREE.BoxGeometry(1, 1, 1),           
@@ -227,11 +352,10 @@
         spawnObstacle(-45);
         spawnObstacle(-65);
 
-        // --- عناصر طاقة مستقبلية ---
+        // العناصر المساعدة
         let collectibles = [];
         const crystalGeo = new THREE.OctahedronGeometry(0.4);
         const crystalMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.9, roughness: 0.1, emissive: 0x004444 }); 
-
         const quantumGeo = new THREE.SphereGeometry(0.35, 16, 16);
         const quantumMat = new THREE.MeshStandardMaterial({ color: 0xff00ff, metalness: 0.9, roughness: 0.1, emissive: 0x440044 }); 
 
@@ -267,20 +391,90 @@
             }
         }, () => {});
 
+        function fireQuantumPulse() {
+            if (isGameOver || quantumEnergy < 100) return;
+            playSound('laser');
+            quantumEnergy = 0;
+            document.getElementById('energyBar').style.width = "0%";
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                if (obs.position.z < 0 && obs.position.z > -25) {
+                    obs.position.z = -80;
+                    obs.position.x = (Math.random() - 0.5) * 3;
+                    score += 20;
+                    updateScoreDisplay();
+                    break;
+                }
+            }
+        }
+
+        const fireBtn = document.getElementById('btnFire');
+        fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireQuantumPulse(); });
+        fireBtn.addEventListener('mousedown', fireQuantumPulse);
+
+        function startGame() {
+            buildPlayerModel(); // بناء الشخصية المختارة
+            document.getElementById('hangarScreen').style.display = 'none';
+            document.getElementById('scoreBoard').style.display = 'block';
+            document.getElementById('gameControls').style.display = 'flex';
+            resetGame();
+        }
+
+        function updateLevelSystem() {
+            let oldLevel = currentLevel;
+            if (score < 50) currentLevel = 1;
+            else if (score >= 50 && score < 150) currentLevel = 2;
+            else currentLevel = 3;
+
+            if (currentLevel !== oldLevel) {
+                playSound('levelup');
+                if (currentLevel === 2) {
+                    leftLine.material.color.setHex(0xff0055);
+                    rightLine.material.color.setHex(0xff0055);
+                    particleMat.color.setHex(0xff0055);
+                    sunLight.color.setHex(0x00ffff);
+                } else if (currentLevel === 3) {
+                    leftLine.material.color.setHex(0xffd700);
+                    rightLine.material.color.setHex(0xffd700);
+                    particleMat.color.setHex(0xffd700);
+                    sunLight.color.setHex(0xffaa00);
+                }
+            }
+
+            let levelNames = {
+                1: "المستوى 1: قطاع النيون الأزرق",
+                2: "المستوى 2: قطاع العاصفة الحمراء",
+                3: "المستوى 3: البعد الكوني الفائق"
+            };
+
+            document.getElementById('scoreVal').innerText = score;
+            document.getElementById('levelIndicator').innerText = levelNames[currentLevel];
+        }
+
         function updateScoreDisplay() {
-            let speedStatus = boostTimer > 0 ? " | ⚡ تدفق الكم الفائق!" : "";
+            let speedStatus = boostTimer > 0 ? " | ⚡ تدفق الكم!" : "";
+            updateLevelSystem();
             document.getElementById('scoreBoard').innerHTML = 
-                `النقاط: ${score}${speedStatus}<br><span style="font-size: 16px; color: #ff0055; text-shadow: 0 0 8px #ff0055;">سنة 2226 | أعلى نتيجة: ${highScore}</span>`;
+                `النقاط: <span id="scoreVal">${score}</span>${speedStatus} | <span id="levelIndicator">${document.getElementById('levelIndicator').innerText}</span><br>` +
+                `شريط طاقة الكم: <div id="energyContainer"><div id="energyBar" style="width: ${quantumEnergy}%;"></div></div>` +
+                `<span style="font-size: 14px; color: #ffd700;">أعلى نتيجة: ${highScore}</span>`;
         }
 
         function resetGame() {
             isGameOver = false;
             score = 0;
+            currentLevel = 1;
             baseGameSpeed = 0.13;
             gameSpeed = baseGameSpeed;
             boostTimer = 0;
+            quantumEnergy = 0;
             player.position.set(0, 0, 0);
             player.rotation.z = 0;
+
+            leftLine.material.color.setHex(0x00ffff);
+            rightLine.material.color.setHex(0x00ffff);
+            particleMat.color.setHex(0x00ffff);
             
             obstacles[0].position.set(0, 0.3, -25);
             obstacles[1].position.set(0, 0.3, -45);
@@ -298,6 +492,13 @@
 
             if (!isGameOver) {
                 animationTime += 0.15;
+
+                const positions = starField.geometry.attributes.position.array;
+                for (let i = 2; i < positions.length; i += 3) {
+                    positions[i] += gameSpeed * 1.5;
+                    if (positions[i] > 10) positions[i] = -140;
+                }
+                starField.geometry.attributes.position.needsUpdate = true;
 
                 if (boostTimer > 0) {
                     boostTimer--;
@@ -329,21 +530,19 @@
                         player.rotation.x = 0;
                     }
                 } else {
-                    bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2.5) * 0.05;
-                    headMesh.position.y = 0.85 + Math.cos(animationTime * 2.5) * 0.03;
+                    if(bodyMesh) bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2.5) * 0.05;
+                    if(headMesh) headMesh.position.y = (selectedCharType === 2 ? 0.55 : 0.85) + Math.cos(animationTime * 2.5) * 0.03;
                 }
 
-                // تحريك المباني لتوضيح حركة التقدم في المدينة
                 for (let i = 0; i < buildings.length; i++) {
                     buildings[i].position.z += gameSpeed * 0.5;
-                    if (buildings[i].position.z > 10) {
-                        buildings[i].position.z = -150;
-                    }
+                    if (buildings[i].position.z > 10) buildings[i].position.z = -150;
                 }
 
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
-                    obs.position.z += gameSpeed;
+                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.15);
+                    obs.position.z += currentObsSpeed;
                     obs.rotation.x += 0.03;
                     obs.rotation.y += 0.04;
 
@@ -351,7 +550,7 @@
                         obs.position.z = -80;
                         obs.position.x = (Math.random() - 0.5) * 3;
                         score += 5;
-                        baseGameSpeed += 0.001;
+                        baseGameSpeed += 0.0012;
                         if (boostTimer === 0) gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
                     }
@@ -393,11 +592,15 @@
                         
                         if (item.userData.type === 'star') {
                             score += 15;
+                            quantumEnergy = Math.min(100, quantumEnergy + 25);
                             playSound('collect');
                         } else if (item.userData.type === 'boost') {
                             boostTimer = 180; 
+                            quantumEnergy = Math.min(100, quantumEnergy + 40);
                             playSound('boost');
                         }
+                        
+                        document.getElementById('energyBar').style.width = quantumEnergy + "%";
                         updateScoreDisplay();
 
                         item.position.z = -70;
