@@ -328,6 +328,7 @@
             const panel = document.getElementById('squadConfigPanel');
             if (mode === 'squad' || mode === 'duo') {
                 panel.style.display = 'block';
+                document.getElementById('squadStatusText').innerText = "Status: Ready to join room (" + mode.toUpperCase() + ")";
             } else {
                 panel.style.display = 'none';
             }
