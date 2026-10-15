@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyber Horizon 6226 - Ultimate Quantum Next-Gen Edition</title>
+    <title>Cyber Horizon 6226 - Ultimate Deterministic Quantum Edition</title>
     <meta name="theme-color" content="#010005">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
@@ -197,7 +197,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // تفعيل دعم Service Worker المتقدم للتخزين المؤقت السحابي الفوري
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -217,7 +216,7 @@
                 socket = io(RENDER_SERVER_URL, { 
                     transports: ['websocket', 'polling'],
                     reconnection: true,
-                    reconnectionAttempts: 20,
+                    reconnectionAttempts: 25,
                     reconnectionDelay: 1000
                 });
 
@@ -260,7 +259,6 @@
                     }
                 });
 
-                // خوارزمية الاستنباط الميت وتنعيم الحركة بأعلى كفاءة (Dead Reckoning & Lerp)
                 socket.on('player_moved', (data) => {
                     if (remotePlayers[data.id]) {
                         remotePlayers[data.id].targetPos = new THREE.Vector3(data.x, data.y, data.z);
@@ -980,159 +978,172 @@
             document.getElementById('gameOverScreen').style.display = 'none';
         }
 
-        function animate() {
+        let lastTime = 0;
+        const fixedTimeStep = 1 / 60;
+        let accumulator = 0;
+
+        function animate(currentTime) {
             requestAnimationFrame(animate);
 
+            if (!lastTime) lastTime = currentTime;
+            let deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            if (deltaTime > 0.25) deltaTime = 0.25;
+
+            accumulator += deltaTime;
+
             if (!isGameOver) {
-                animationTime += 0.15;
+                while (accumulator >= fixedTimeStep) {
+                    animationTime += 0.15;
 
-                if (currentLevel === 3) {
-                    gravityAngle += 0.012;
-                    scene.rotation.z = Math.sin(gravityAngle) * 0.07;
-                } else {
-                    scene.rotation.z *= 0.9;
-                }
-
-                const positions = starField.geometry.attributes.position.array;
-                let currentParticleSpeed = boostTimer > 0 ? gameSpeed * 3.0 : gameSpeed * 1.5;
-                for (let i = 2; i < positions.length; i += 3) {
-                    positions[i] += currentParticleSpeed;
-                    if (positions[i] > 10) positions[i] = -140;
-                }
-                starField.geometry.attributes.position.needsUpdate = true;
-
-                if (boostTimer > 0) {
-                    boostTimer--;
-                    gameSpeed = baseGameSpeed * 2.3;
-                    if (boostTimer === 0) {
-                        gameSpeed = baseGameSpeed;
-                        updateScoreDisplay();
-                    }
-                }
-
-                if (moveLeft && player.position.x > -2.2) {
-                    player.position.x -= 0.09;
-                    if (player.rotation.z < 0.3) player.rotation.z += 0.05;
-                } else if (moveRight && player.position.x < 2.2) {
-                    player.position.x += 0.09;
-                    if (player.rotation.z > -0.3) player.rotation.z -= 0.05;
-                } else {
-                    player.rotation.z *= 0.8;
-                }
-
-                player.position.y += playerVelocityY;
-                if (!isGrounded) {
-                    playerVelocityY += gravity;
-                    player.rotation.x += 0.05;
-                    if (player.position.y <= 0) {
-                        player.position.y = 0;
-                        playerVelocityY = 0;
-                        isGrounded = true;
-                        player.rotation.x = 0;
-                    }
-                } else {
-                    if(bodyMesh) bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2.5) * 0.05;
-                    if(headMesh) headMesh.position.y = (selectedCharType === 2 ? 0.55 : 0.85) + Math.cos(animationTime * 2.5) * 0.03;
-                }
-
-                if (timeWarpActive && timeEcho) {
-                    timeEcho.position.x = player.position.x;
-                    timeEcho.position.y = player.position.y;
-                    timeEcho.position.z = player.position.z - 3;
-                    timeEcho.rotation.copy(player.rotation);
-                }
-
-                for (let i = 0; i < buildings.length; i++) {
-                    buildings[i].position.z += gameSpeed * 0.5;
-                    if (buildings[i].position.z > 10) buildings[i].position.z = -150;
-                }
-
-                for (let i = 0; i < obstacles.length; i++) {
-                    let obs = obstacles[i];
-                    // نظام الذكاء الاصطناعي التكيفي للتحكم في سرعة العقبات بدقة مذهلة
-                    let aiDynamicFactor = 1 + (currentLevel - 1) * 0.15 + (score * 0.0001);
-                    let currentObsSpeed = gameSpeed * aiDynamicFactor;
-                    obs.position.z += currentObsSpeed;
-                    obs.rotation.x += 0.03;
-                    obs.rotation.y += 0.04;
-
-                    if (obs.position.z > 4) {
-                        obs.position.z = -80;
-                        obs.position.x = (Math.random() - 0.5) * 3;
-                        score += 5;
-                        baseGameSpeed += 0.0012;
-                        if (boostTimer === 0) gameSpeed = baseGameSpeed;
-                        updateScoreDisplay();
+                    if (currentLevel === 3) {
+                        gravityAngle += 0.012;
+                        scene.rotation.z = Math.sin(gravityAngle) * 0.07;
+                    } else {
+                        scene.rotation.z *= 0.9;
                     }
 
-                    if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
-                        Math.abs(player.position.x - obs.position.x) < 0.8 &&
-                        player.position.y < 0.7) {
-                        
-                        if (hasShield) {
-                            hasShield = false;
-                            if(shieldMesh) shieldMesh.visible = false;
+                    const positions = starField.geometry.attributes.position.array;
+                    let currentParticleSpeed = boostTimer > 0 ? gameSpeed * 3.0 : gameSpeed * 1.5;
+                    for (let i = 2; i < positions.length; i += 3) {
+                        positions[i] += currentParticleSpeed;
+                        if (positions[i] > 10) positions[i] = -140;
+                    }
+                    starField.geometry.attributes.position.needsUpdate = true;
+
+                    if (boostTimer > 0) {
+                        boostTimer--;
+                        gameSpeed = baseGameSpeed * 2.3;
+                        if (boostTimer === 0) {
+                            gameSpeed = baseGameSpeed;
+                            updateScoreDisplay();
+                        }
+                    }
+
+                    if (moveLeft && player.position.x > -2.2) {
+                        player.position.x -= 0.09;
+                        if (player.rotation.z < 0.3) player.rotation.z += 0.05;
+                    } else if (moveRight && player.position.x < 2.2) {
+                        player.position.x += 0.09;
+                        if (player.rotation.z > -0.3) player.rotation.z -= 0.05;
+                    } else {
+                        player.rotation.z *= 0.8;
+                    }
+
+                    player.position.y += playerVelocityY;
+                    if (!isGrounded) {
+                        playerVelocityY += gravity;
+                        player.rotation.x += 0.05;
+                        if (player.position.y <= 0) {
+                            player.position.y = 0;
+                            playerVelocityY = 0;
+                            isGrounded = true;
+                            player.rotation.x = 0;
+                        }
+                    } else {
+                        if(bodyMesh) bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2.5) * 0.05;
+                        if(headMesh) headMesh.position.y = (selectedCharType === 2 ? 0.55 : 0.85) + Math.cos(animationTime * 2.5) * 0.03;
+                    }
+
+                    if (timeWarpActive && timeEcho) {
+                        timeEcho.position.x = player.position.x;
+                        timeEcho.position.y = player.position.y;
+                        timeEcho.position.z = player.position.z - 3;
+                        timeEcho.rotation.copy(player.rotation);
+                    }
+
+                    for (let i = 0; i < buildings.length; i++) {
+                        buildings[i].position.z += gameSpeed * 0.5;
+                        if (buildings[i].position.z > 10) buildings[i].position.z = -150;
+                    }
+
+                    for (let i = 0; i < obstacles.length; i++) {
+                        let obs = obstacles[i];
+                        let aiDynamicFactor = 1 + (currentLevel - 1) * 0.15 + (score * 0.0001);
+                        let currentObsSpeed = gameSpeed * aiDynamicFactor;
+                        obs.position.z += currentObsSpeed;
+                        obs.rotation.x += 0.03;
+                        obs.rotation.y += 0.04;
+
+                        if (obs.position.z > 4) {
                             obs.position.z = -80;
                             obs.position.x = (Math.random() - 0.5) * 3;
-                            playSound('shield');
+                            score += 5;
+                            baseGameSpeed += 0.0012;
+                            if (boostTimer === 0) gameSpeed = baseGameSpeed;
                             updateScoreDisplay();
-                        } else {
-                            isGameOver = true;
-                            stopCyberpunkMusic();
-                            playSound('crash');
+                        }
 
-                            let t = translations[currentLang] || translations.en;
-                            let isNewHighScore = false;
-                            if (score > highScore) {
-                                highScore = score;
-                                localStorage.setItem('futureGameHighScore', highScore);
-                                isNewHighScore = true;
+                        if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
+                            Math.abs(player.position.x - obs.position.x) < 0.8 &&
+                            player.position.y < 0.7) {
+                            
+                            if (hasShield) {
+                                hasShield = false;
+                                if(shieldMesh) shieldMesh.visible = false;
+                                obs.position.z = -80;
+                                obs.position.x = (Math.random() - 0.5) * 3;
+                                playSound('shield');
+                                updateScoreDisplay();
+                            } else {
+                                isGameOver = true;
+                                stopCyberpunkMusic();
+                                playSound('crash');
+
+                                let t = translations[currentLang] || translations.en;
+                                let isNewHighScore = false;
+                                if (score > highScore) {
+                                    highScore = score;
+                                    localStorage.setItem('futureGameHighScore', highScore);
+                                    isNewHighScore = true;
+                                }
+
+                                document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
+                                document.getElementById('highScoreMsg').innerText = isNewHighScore ? (t.newHigh || "🎉 New Quantum Record!") : ((t.high || "High Score") + ": " + highScore);
+                                document.getElementById('gameOverScreen').style.display = 'flex';
                             }
-
-                            document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
-                            document.getElementById('highScoreMsg').innerText = isNewHighScore ? (t.newHigh || "🎉 New Quantum Record!") : ((t.high || "High Score") + ": " + highScore);
-                            document.getElementById('gameOverScreen').style.display = 'flex';
                         }
                     }
-                }
 
-                for (let j = 0; j < collectibles.length; j++) {
-                    let item = collectibles[j];
-                    item.position.z += gameSpeed;
-                    item.rotation.y += 0.08;
-                    item.rotation.z += 0.05;
+                    for (let j = 0; j < collectibles.length; j++) {
+                        let item = collectibles[j];
+                        item.position.z += gameSpeed;
+                        item.rotation.y += 0.08;
+                        item.rotation.z += 0.05;
 
-                    if (item.position.z > 4) {
-                        item.position.z = -70;
-                        item.position.x = (Math.random() - 0.5) * 3;
-                    }
-
-                    if (Math.abs(player.position.z - item.position.z) < 0.8 &&
-                        Math.abs(player.position.x - item.position.x) < 0.8 &&
-                        player.position.y < 1.1) {
-                        
-                        if (item.userData.type === 'star') {
-                            score += 15;
-                            quantumEnergy = Math.min(100, quantumEnergy + 25);
-                            playSound('collect');
-                        } else if (item.userData.type === 'boost') {
-                            boostTimer = 200; 
-                            quantumEnergy = Math.min(100, quantumEnergy + 40);
-                            playSound('boost');
-                        } else if (item.userData.type === 'shield') {
-                            hasShield = true;
-                            if(shieldMesh) shieldMesh.visible = true;
-                            playSound('shield');
+                        if (item.position.z > 4) {
+                            item.position.z = -70;
+                            item.position.x = (Math.random() - 0.5) * 3;
                         }
-                        
-                        updateScoreDisplay();
 
-                        item.position.z = -70;
-                        item.position.x = (Math.random() - 0.5) * 3;
+                        if (Math.abs(player.position.z - item.position.z) < 0.8 &&
+                            Math.abs(player.position.x - item.position.x) < 0.8 &&
+                            player.position.y < 1.1) {
+                            
+                            if (item.userData.type === 'star') {
+                                score += 15;
+                                quantumEnergy = Math.min(100, quantumEnergy + 25);
+                                playSound('collect');
+                            } else if (item.userData.type === 'boost') {
+                                boostTimer = 200; 
+                                quantumEnergy = Math.min(100, quantumEnergy + 40);
+                                playSound('boost');
+                            } else if (item.userData.type === 'shield') {
+                                hasShield = true;
+                                if(shieldMesh) shieldMesh.visible = true;
+                                playSound('shield');
+                            }
+                            
+                            updateScoreDisplay();
+
+                            item.position.z = -70;
+                            item.position.x = (Math.random() - 0.5) * 3;
+                        }
                     }
+
+                    accumulator -= fixedTimeStep;
                 }
 
-                // تطبيق التنبؤ العكسي واستيفاء الحركة لجميع الأصدقاء أونلاين
                 for (let id in remotePlayers) {
                     let pMesh = remotePlayers[id];
                     if (pMesh.targetPos) {
@@ -1140,7 +1151,6 @@
                     }
                 }
 
-                // 🌐 بث إحداثيات اللاعب الحيّة للأصدقاء أونلاين
                 if (socket) {
                     socket.emit('player_move', {
                         x: player.position.x,
