@@ -5,7 +5,6 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 
-// إعدادات الاتصال للسماح للعبة بالاتصال بالسيرفر
 const io = new Server(server, {
     cors: {
         origin: "*",
@@ -13,18 +12,17 @@ const io = new Server(server, {
     }
 });
 
-// الصفحة الرئيسية للتأكد من أن السيرفر يعمل
 app.get('/', (req, res) => {
-    res.send('Cyber Horizon 6226 Multiplayer Server is Running Successfully!');
+    res.send('Cyber Horizon 6226 Ultimate Server is Running!');
 });
 
-// تخزين الغرف واللاعبين
 let rooms = {};
+let globalLeaderboard = []; // لوحة الصدارة العالمية السحابية
 
 io.on('connection', (socket) => {
     console.log('Player connected:', socket.id);
 
-    // 1. عند انضمام لاعب للغرفة
+    // الانضمام للغرفة واللوبي
     socket.on('join_room', (data) => {
         let roomCode = data.roomCode || 'cyber6226';
         let playerName = data.playerName || 'Player';
@@ -34,7 +32,6 @@ io.on('connection', (socket) => {
         socket.roomCode = roomCode;
         socket.playerName = playerName;
 
-        // إذا لم تكن الغرفة موجودة، يتم إنشاؤها وتعيين هذا اللاعب كقائد لها (Party Leader)
         if (!rooms[roomCode]) {
             rooms[roomCode] = {
                 leader: socket.id,
@@ -50,12 +47,11 @@ io.on('connection', (socket) => {
             score: 0
         };
 
-        // إرسال التحديثات لجميع أجهزة اللاعبين الموجودين داخل نفس الغرفة
         io.to(roomCode).emit('update_party', rooms[roomCode]);
         io.to(roomCode).emit('update_players', rooms[roomCode].players);
     });
 
-    // 2. أمر بدء اللعب من قائد الفريق (Party Leader)
+    // بدء اللعبة جماعياً بأمر من قائد الفريق
     socket.on('start_game_party', () => {
         let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode] && rooms[roomCode].leader === socket.id) {
@@ -63,7 +59,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 3. مزامنة حركة وإحداثيات اللاعبين أونلاين
+    // مزامنة حركة اللاعبين أثناء اللعب على المضمار (النقاط 1 و 4)
     socket.on('player_move', (data) => {
         let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode] && rooms[roomCode].players[socket.id]) {
@@ -77,12 +73,21 @@ io.on('connection', (socket) => {
                 id: socket.id,
                 x: data.x,
                 y: data.y,
-                z: data.z
+                z: data.z,
+                score: data.score
             });
         }
     });
 
-    // 4. عند خروج لاعب أو انقطاع الاتصال
+    // تحديث لوحة الصدارة العالمية (النقطة 2)
+    socket.on('submit_score', (data) => {
+        globalLeaderboard.push({ name: data.name, score: data.score });
+        globalLeaderboard.sort((a, b) => b.score - a.score);
+        globalLeaderboard = globalLeaderboard.slice(0, 10); // حفظ أفضل 10 لاعبين عالمياً
+        io.emit('update_leaderboard', globalLeaderboard);
+    });
+
+    // إدارة انقطاع الاتصال
     socket.on('disconnect', () => {
         let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode]) {
@@ -91,7 +96,6 @@ io.on('connection', (socket) => {
             if (Object.keys(rooms[roomCode].players).length === 0) {
                 delete rooms[roomCode];
             } else {
-                // نقل القيادة للاعب التالي في حال خروج القائد
                 if (rooms[roomCode].leader === socket.id) {
                     rooms[roomCode].leader = Object.keys(rooms[roomCode].players)[0];
                 }
