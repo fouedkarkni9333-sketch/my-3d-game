@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 
-// إعدادات الـ CORS لضمان توافق الاتصال مع أي نطاق (Domain)
+// إعدادات الاتصال للسماح للعبة بالاتصال بالسيرفر
 const io = new Server(server, {
     cors: {
         origin: "*",
@@ -13,110 +13,97 @@ const io = new Server(server, {
     }
 });
 
+// الصفحة الرئيسية للتأكد من أن السيرفر يعمل
 app.get('/', (req, res) => {
-    res.send('Cyber Horizon 6226 Multiplayer Quantum Server is Online & Active!');
+    res.send('Cyber Horizon 6226 Multiplayer Server is Running Successfully!');
 });
 
-// تخزين بيانات الغرف واللاعبين
-const rooms = {}; // roomCode -> { leader: socketId, players: { socketId: { name, vehicle, x, y, z, score } } }
+// تخزين الغرف واللاعبين
+let rooms = {};
 
 io.on('connection', (socket) => {
-    console.log(`⚡ New Quantum Connection: ${socket.id}`);
+    console.log('Player connected:', socket.id);
 
-    // انضمام اللاعب إلى الغرفة أو اللوبي
+    // 1. عند انضمام لاعب للغرفة
     socket.on('join_room', (data) => {
-        const { roomCode, playerName, vehicleType } = data;
-        
-        // إذا كان هناك غرفة قديمة للاعب، نخرجه منها أولاً
-        leaveAllRooms(socket);
+        let roomCode = data.roomCode || 'cyber6226';
+        let playerName = data.playerName || 'Player';
+        let vehicleType = data.vehicleType || 0;
 
         socket.join(roomCode);
         socket.roomCode = roomCode;
-        socket.playerName = playerName || "Player";
+        socket.playerName = playerName;
 
+        // إذا لم تكن الغرفة موجودة، يتم إنشاؤها وتعيين هذا اللاعب كقائد لها (Party Leader)
         if (!rooms[roomCode]) {
             rooms[roomCode] = {
-                leader: socket.id, // أول شخص ينشئ الغرفة يصبح قائد الفريق تلقائياً
+                leader: socket.id,
                 players: {}
             };
         }
 
         rooms[roomCode].players[socket.id] = {
-            name: socket.playerName,
-            vehicle: vehicleType || 0,
+            id: socket.id,
+            name: playerName,
+            vehicle: vehicleType,
             x: 0, y: 0, z: 0,
             score: 0
         };
 
-        console.log(`👤 Player [${socket.playerName}] joined room: ${roomCode}`);
-
-        // تحديث بيانات البارتي والغرفة لجميع المتواجدين
+        // إرسال التحديثات لجميع أجهزة اللاعبين الموجودين داخل نفس الغرفة
         io.to(roomCode).emit('update_party', rooms[roomCode]);
         io.to(roomCode).emit('update_players', rooms[roomCode].players);
     });
 
-    // بدء اللعبة جماعياً من قِبل قائد الفريق (Party Leader) فقط
+    // 2. أمر بدء اللعب من قائد الفريق (Party Leader)
     socket.on('start_game_party', () => {
-        const roomCode = socket.roomCode;
+        let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode] && rooms[roomCode].leader === socket.id) {
-            console.log(`🚀 Party Leader [${socket.id}] launched the game for room: ${roomCode}`);
             io.to(roomCode).emit('launch_game_for_all');
         }
     });
 
-    // استقبال وتحديث إحداثيات وتحركات اللاعب بثاً حياً
-    socket.on('player_move', (posData) => {
-        const roomCode = socket.roomCode;
+    // 3. مزامنة حركة وإحداثيات اللاعبين أونلاين
+    socket.on('player_move', (data) => {
+        let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode] && rooms[roomCode].players[socket.id]) {
             let p = rooms[roomCode].players[socket.id];
-            p.x = posData.x;
-            p.y = posData.y;
-            p.z = posData.z;
-            p.score = posData.score;
+            p.x = data.x;
+            p.y = data.y;
+            p.z = data.z;
+            p.score = data.score;
 
-            // بث الحركة لباقي اللاعبين في نفس الغرفة
             socket.to(roomCode).emit('player_moved', {
                 id: socket.id,
-                x: p.x,
-                y: p.y,
-                z: p.z
+                x: data.x,
+                y: data.y,
+                z: data.z
             });
         }
     });
 
-    // عند انقطاع الاتصال أو خروج اللاعب
+    // 4. عند خروج لاعب أو انقطاع الاتصال
     socket.on('disconnect', () => {
-        console.log(`❌ Player Disconnected: ${socket.id}`);
-        leaveAllRooms(socket);
-    });
-
-    function leaveAllRooms(sock) {
-        const roomCode = sock.roomCode;
+        let roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode]) {
-            if (rooms[roomCode].players[sock.id]) {
-                delete rooms[roomCode].players[sock.id];
-            }
+            delete rooms[roomCode].players[socket.id];
 
-            // إذا خرج قائد الفريق، نعين قائداً جديداً تلقائياً لمن تبقى في الغرفة
-            if (rooms[roomCode].leader === sock.id) {
-                const remainingIds = Object.keys(rooms[roomCode].players);
-                if (remainingIds.length > 0) {
-                    rooms[roomCode].leader = remainingIds[0];
-                } else {
-                    delete rooms[roomCode]; // حذف الغرفة إن كانت فارغة تماماً
+            if (Object.keys(rooms[roomCode].players).length === 0) {
+                delete rooms[roomCode];
+            } else {
+                // نقل القيادة للاعب التالي في حال خروج القائد
+                if (rooms[roomCode].leader === socket.id) {
+                    rooms[roomCode].leader = Object.keys(rooms[roomCode].players)[0];
                 }
-            }
-
-            if (rooms[roomCode]) {
                 io.to(roomCode).emit('update_party', rooms[roomCode]);
                 io.to(roomCode).emit('update_players', rooms[roomCode].players);
             }
-            sock.roomCode = null;
         }
-    }
+        console.log('Player disconnected:', socket.id);
+    });
 });
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log(`🚀 Quantum Backend Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
