@@ -40,6 +40,12 @@
         
         /* شاشة الهنجار واختيار الأنماط العالمية */
         #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a021f 0%, #010005 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(20px); overflow-y: auto; padding: 20px; box-sizing: border-box;}
+        
+        /* نقل قائمة اللغات لأعلى يسار شاشة الهنجار فوق العنوان */
+        .language-select-container { position: absolute; top: 15px; left: 20px; z-index: 40; }
+        .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
+        .language-select-container select option { background: #050214; color: #fff; }
+
         #hangarScreen h1 { font-size: 36px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
         #hangarScreen p { font-size: 14px; color: #ff0055; margin-bottom: 15px; text-shadow: 0 0 12px #ff0055; }
         
@@ -55,10 +61,6 @@
         #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 12px; border-radius: 8px; width: 60%; text-align: center; font-weight: bold; outline: none; }
         .voice-btn { background: #ff0055; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 5px; box-shadow: 0 0 10px #ff0055; }
         .voice-btn.active { background: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; }
-
-        .language-select-container { margin-bottom: 12px; }
-        .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
-        .language-select-container select option { background: #050214; color: #fff; }
 
         .character-options { display: flex; gap: 15px; margin-bottom: 20px; }
         .char-card { width: 120px; padding: 12px; background: rgba(255,255,255,0.04); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(0,255,255,0.1); }
@@ -87,41 +89,9 @@
     </style>
 </head>
 <body>
-    <!-- شاشة الهنجار السيبراني لعام 6226 مع اختيار الأنماط والدردشة الصوتية -->
+    <!-- شاشة الهنجار السيبراني لعام 6226 مع موقع اللغة في الأيسر فوق العنوان -->
     <div id="hangarScreen">
-        <h1 id="uiTitle">CYBER HORIZON 6226</h1>
-        <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
-        
-        <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
-        <div class="mode-selection">
-            <div class="mode-card selected" onclick="selectGameMode('solo', this)">
-                <div style="font-size: 24px;">👤</div>
-                <h4>Solo Matrix</h4>
-                <span>Single Player</span>
-            </div>
-            <div class="mode-card" onclick="selectGameMode('duo', this)">
-                <div style="font-size: 24px;">👥</div>
-                <h4>Cyber Duo</h4>
-                <span>Co-Op / 2 Players</span>
-            </div>
-            <div class="mode-card" onclick="selectGameMode('squad', this)">
-                <div style="font-size: 24px;">🌐</div>
-                <h4>Squad 6+</h4>
-                <span>Global Voice Room</span>
-            </div>
-        </div>
-
-        <!-- إعدادات غرفة السكواد والمايكروفون العالمي -->
-        <div id="squadConfigPanel">
-            <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">🌍 Global Squad & Voice Gateway</div>
-            <div style="display: flex; justify-content: center; align-items: center; gap: 5px;">
-                <input type="text" id="roomCodeInput" value="CYBER-6226" placeholder="Room Code">
-                <button class="voice-btn" id="voiceToggleBtn" onclick="toggleVoiceChat()">🎤 Mic: OFF</button>
-            </div>
-            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Status: Ready to link global players (China, Germany, Tunisia...)</div>
-        </div>
-
-        <!-- قائمة اختيار 30 لغة عالمية -->
+        <!-- قائمة اختيار 30 لغة عالمية أعلى يسار الشاشة -->
         <div class="language-select-container">
             <select id="langSelector" onchange="changeLanguage(this.value)">
                 <option value="en" selected>English</option>
@@ -155,6 +125,38 @@
                 <option value="ms">Bahasa Melayu</option>
                 <option value="bn">বাংলা (Bengali)</option>
             </select>
+        </div>
+
+        <h1 id="uiTitle">CYBER HORIZON 6226</h1>
+        <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
+        
+        <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
+        <div class="mode-selection">
+            <div class="mode-card selected" onclick="selectGameMode('solo', this)">
+                <div style="font-size: 24px;">👤</div>
+                <h4>Solo Matrix</h4>
+                <span>Single Player</span>
+            </div>
+            <div class="mode-card" onclick="selectGameMode('duo', this)">
+                <div style="font-size: 24px;">👥</div>
+                <h4>Cyber Duo</h4>
+                <span>Co-Op / 2 Players</span>
+            </div>
+            <div class="mode-card" onclick="selectGameMode('squad', this)">
+                <div style="font-size: 24px;">🌐</div>
+                <h4>Squad 6+</h4>
+                <span>Global Voice Room</span>
+            </div>
+        </div>
+
+        <!-- إعدادات غرفة السكواد والمايكروفون العالمي -->
+        <div id="squadConfigPanel">
+            <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">🌍 Global Squad & Voice Gateway</div>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 5px;">
+                <input type="text" id="roomCodeInput" value="CYBER-6226" placeholder="Room Code">
+                <button class="voice-btn" id="voiceToggleBtn" onclick="toggleVoiceChat()">🎤 Mic: OFF</button>
+            </div>
+            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Status: Ready to link global players (China, Germany, Tunisia...)</div>
         </div>
 
         <div class="character-options">
@@ -351,9 +353,69 @@
         }
 
         let audioCtx = null;
+        let musicInterval = null;
+        let musicStep = 0;
+
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // محرك الموسيقى السيبرانية المستقبلية المدمج برمجياً (Procedural Cyberpunk Music)
+        function startCyberpunkMusic() {
+            initAudio();
+            if (!audioCtx || musicInterval) return;
+
+            // سلم موسيقي سايبربنك مستقبلية (Minor Pentatonic & Futuristic Synth Waves)
+            const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 123.47, 98];
+            const leadNotes = [220, 261.63, 293.66, 329.63, 392.00, 440.00];
+
+            musicInterval = setInterval(() => {
+                if (isGameOver) return;
+                
+                let now = audioCtx.currentTime;
+                
+                // Synth Bass Wave
+                let bassOsc = audioCtx.createOscillator();
+                let bassGain = audioCtx.createGain();
+                bassOsc.type = 'sawtooth';
+                let note = bassNotes[musicStep % bassNotes.length];
+                bassOsc.frequency.setValueAtTime(note, now);
+                
+                bassGain.gain.setValueAtTime(0.12, now);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                
+                bassOsc.connect(bassGain);
+                bassGain.connect(audioCtx.destination);
+                bassOsc.start(now);
+                bassOsc.stop(now + 0.18);
+
+                // Synth Arpeggio Wave (موسيقى حماسية مستقبلية متتالية)
+                if (musicStep % 2 === 0) {
+                    let leadOsc = audioCtx.createOscillator();
+                    let leadGain = audioCtx.createGain();
+                    leadOsc.type = 'square';
+                    let leadNote = leadNotes[(musicStep * 3) % leadNotes.length];
+                    leadOsc.frequency.setValueAtTime(leadNote, now);
+
+                    leadGain.gain.setValueAtTime(0.05, now);
+                    leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+                    leadOsc.connect(leadGain);
+                    leadGain.connect(audioCtx.destination);
+                    leadOsc.start(now);
+                    leadOsc.stop(now + 0.15);
+                }
+
+                musicStep++;
+            }, 130);
+        }
+
+        function stopCyberpunkMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
             }
         }
 
@@ -752,6 +814,7 @@
             document.getElementById('hangarScreen').style.display = 'none';
             document.getElementById('scoreBoard').style.display = 'flex';
             document.getElementById('gameControls').style.display = 'flex';
+            startCyberpunkMusic();
             resetGame();
         }
 
@@ -837,6 +900,7 @@
             collectibles[0].position.set(0, 0.6, -35);
             collectibles[1].position.set(0, 0.6, -55);
 
+            startCyberpunkMusic();
             updateScoreDisplay();
             document.getElementById('gameOverScreen').style.display = 'none';
         }
@@ -937,6 +1001,7 @@
                             updateScoreDisplay();
                         } else {
                             isGameOver = true;
+                            stopCyberpunkMusic();
                             playSound('crash');
 
                             let t = translations[currentLang] || translations.en;
