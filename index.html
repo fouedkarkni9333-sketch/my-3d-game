@@ -216,7 +216,7 @@
                 socket = io(RENDER_SERVER_URL, { 
                     transports: ['websocket', 'polling'],
                     reconnection: true,
-                    reconnectionAttempts: 25,
+                    reconnectionAttempts: 30,
                     reconnectionDelay: 1000
                 });
 
@@ -746,7 +746,7 @@
         let gravityAngle = 0;
         let animationTime = 0;
 
-        let highScore = localStorage.getItem('futureGameHighScore') || 0;
+        let highScore = parseInt(localStorage.getItem('futureGameHighScore')) || 0;
 
         let obstacles = [];
         const obsGeos = [
