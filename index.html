@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المكعب ثلاثية الأبعاد</title>
+    <title>لعبة المكعب ثلاثية الأبعاد - تصميم محسّن</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: white; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px black; z-index: 10; line-height: 1.5; }
@@ -58,7 +58,6 @@
             let now = audioCtx.currentTime;
 
             if (type === 'jump') {
-                // صوت قفز (تردد صاعد)
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(150, now);
                 osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
@@ -67,7 +66,6 @@
                 osc.start(now);
                 osc.stop(now + 0.15);
             } else if (type === 'crash') {
-                // صوت اصطدام (تردد منخفض وخشن)
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(120, now);
                 osc.frequency.linearRampToValueAtTime(40, now + 0.3);
@@ -101,10 +99,49 @@
         platform.position.set(0, -1, -20);
         scene.add(platform);
 
-        // اللاعب
-        const playerGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-        const playerMat = new THREE.MeshStandardMaterial({ color: 0xff4500 });
-        const player = new THREE.Mesh(playerGeo, playerMat);
+        // --- تصميم اللاعب المحسّن (شخصية روبوت ثلاثية الأبعاد) ---
+        const player = new THREE.Group();
+
+        // جسم الروبوت
+        const bodyGeo = new THREE.BoxGeometry(0.6, 0.7, 0.4);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3498db, metalness: 0.3, roughness: 0.4 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 0.35;
+        player.add(bodyMesh);
+
+        // رأس الروبوت
+        const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.4);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.2 });
+        const headMesh = new THREE.Mesh(headGeo, headMat);
+        headMesh.position.y = 0.85;
+        player.add(headMesh);
+
+        // عيون الروبوت (توهج باللون الأحمر/الأبيض)
+        const eyeGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.12, 0.88, 0.21);
+        player.add(leftEye);
+
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.12, 0.88, 0.21);
+        player.add(rightEye);
+
+        // هوائي الروبوت في الأعلى
+        const antennaRodGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.2);
+        const antennaMat = new THREE.MeshStandardMaterial({ color: 0x7f8c8d });
+        const antennaRod = new THREE.Mesh(antennaRodGeo, antennaMat);
+        antennaRod.position.set(0, 1.15, 0);
+        player.add(antennaRod);
+
+        const antennaBallGeo = new THREE.SphereGeometry(0.06, 8, 8);
+        const antennaBallMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
+        const antennaBall = new THREE.Mesh(antennaBallGeo, antennaBallMat);
+        antennaBall.position.set(0, 1.28, 0);
+        player.add(antennaBall);
+
+        // ضبط موضع مجموعة اللاعب الرئيسية في المشهد
         player.position.set(0, 0, 0);
         scene.add(player);
 
@@ -154,7 +191,7 @@
             if (isGrounded && !isGameOver) {
                 playerVelocityY = 0.25;
                 isGrounded = false;
-                playSound('jump'); // تشغيل صوت القفز
+                playSound('jump');
             }
         }, () => {});
 
@@ -214,12 +251,12 @@
                         }
                     }
 
-                    // فحص الاصطدام
+                    // فحص الاصطدام (باستخدام موقع إحداثيات مجموعة الروبوت)
                     if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
                         Math.abs(player.position.x - obs.position.x) < 0.8 &&
                         player.position.y < 0.6) {
                         isGameOver = true;
-                        playSound('crash'); // تشغيل صوت الاصطدام
+                        playSound('crash');
 
                         let isNewHighScore = false;
                         if (score > highScore) {
