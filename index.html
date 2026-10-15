@@ -512,6 +512,7 @@
             let now = audioCtx.currentTime;
 
             if (type === 'jump') {
+                if (navigator.vibrate) navigator.vibrate(40);
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(220, now);
                 osc.frequency.exponentialRampToValueAtTime(700, now + 0.15);
@@ -520,6 +521,7 @@
                 osc.start(now);
                 osc.stop(now + 0.15);
             } else if (type === 'crash') {
+                if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(140, now);
                 osc.frequency.linearRampToValueAtTime(15, now + 0.45);
@@ -528,6 +530,7 @@
                 osc.start(now);
                 osc.stop(now + 0.45);
             } else if (type === 'collect') {
+                if (navigator.vibrate) navigator.vibrate(30);
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
@@ -536,6 +539,7 @@
                 osc.start(now);
                 osc.stop(now + 0.12);
             } else if (type === 'boost' || type === 'time') {
+                if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(350, now);
                 osc.frequency.linearRampToValueAtTime(1300, now + 0.35);
@@ -544,6 +548,7 @@
                 osc.start(now);
                 osc.stop(now + 0.35);
             } else if (type === 'shield') {
+                if (navigator.vibrate) navigator.vibrate(80);
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(650, now);
                 osc.frequency.linearRampToValueAtTime(350, now + 0.2);
@@ -552,6 +557,7 @@
                 osc.start(now);
                 osc.stop(now + 0.2);
             } else if (type === 'laser') {
+                if (navigator.vibrate) navigator.vibrate(100);
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(900, now);
                 osc.frequency.exponentialRampToValueAtTime(80, now + 0.25);
@@ -560,6 +566,7 @@
                 osc.start(now);
                 osc.stop(now + 0.25);
             } else if (type === 'levelup' || type === 'rankup') {
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(450, now);
                 osc.frequency.exponentialRampToValueAtTime(1400, now + 0.35);
@@ -1059,18 +1066,17 @@
 
                     for (let i = 0; i < obstacles.length; i++) {
                         let obs = obstacles[i];
-                        // أنظمة الذكاء الاصطناعي الفائق لتوليد تحديات غير مسبوقة تزيد الإدمان
-                        let aiDynamicFactor = 1 + (currentLevel - 1) * 0.18 + (score * 0.00015);
+                        let aiDynamicFactor = 1 + (currentLevel - 1) * 0.22 + (score * 0.0002);
                         let currentObsSpeed = gameSpeed * aiDynamicFactor;
                         obs.position.z += currentObsSpeed;
-                        obs.rotation.x += 0.04;
-                        obs.rotation.y += 0.05;
+                        obs.rotation.x += 0.05;
+                        obs.rotation.y += 0.06;
 
                         if (obs.position.z > 4) {
                             obs.position.z = -80;
                             obs.position.x = (Math.random() - 0.5) * 3;
                             score += 5;
-                            baseGameSpeed += 0.0014;
+                            baseGameSpeed += 0.0016;
                             if (boostTimer === 0) gameSpeed = baseGameSpeed;
                             updateScoreDisplay();
                         }
@@ -1109,8 +1115,8 @@
                     for (let j = 0; j < collectibles.length; j++) {
                         let item = collectibles[j];
                         item.position.z += gameSpeed;
-                        item.rotation.y += 0.1;
-                        item.rotation.z += 0.07;
+                        item.rotation.y += 0.12;
+                        item.rotation.z += 0.09;
 
                         if (item.position.z > 4) {
                             item.position.z = -70;
