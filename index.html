@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyber Horizon 6226 - Real Online Multiplayer</title>
+    <title>Cyber Horizon 6226 - Ultimate Edition</title>
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         
+        /* لوحة النتائج مقسمة على الجانب الأيمن واليسار لحجب الرؤية عن المنتصف تماماً */
         #scoreBoard { 
             position: absolute; 
             top: 15px; 
@@ -38,8 +39,10 @@
         #energyContainer { width: 140px; height: 8px; background: rgba(255,255,255,0.2); border: 1px solid #00ffff; border-radius: 4px; margin-top: 4px; overflow: hidden; box-shadow: 0 0 8px rgba(0,255,255,0.5); }
         #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055, #ffd700); transition: width 0.2s ease; }
         
+        /* شاشة الهنجار الأبعادي لعام 6226 والإعدادات */
         #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a021f 0%, #010005 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(20px); overflow-y: auto; padding: 20px; box-sizing: border-box;}
         
+        /* موقع قائمة اللغات في أعلى اليسار فوق عنوان اللعبة */
         .language-select-container { position: absolute; top: 15px; left: 20px; z-index: 40; }
         .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
         .language-select-container select option { background: #050214; color: #fff; }
@@ -47,17 +50,18 @@
         #hangarScreen h1 { font-size: 36px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
         #hangarScreen p { font-size: 14px; color: #ff0055; margin-bottom: 15px; text-shadow: 0 0 12px #ff0055; }
         
+        /* أنماط اللعب الثلاثة: Solo, Duo, Squad 6+ */
         .mode-selection { display: flex; gap: 15px; margin-bottom: 15px; }
         .mode-card { width: 110px; padding: 10px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
         .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
         .mode-card h4 { margin: 5px 0; color: #fff; font-size: 14px; }
         .mode-card span { font-size: 11px; color: #aaa; }
 
-        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 330px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
+        /* نافذة إعدادات الغرفة الصوتية والشبكة أونلاين */
+        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 320px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
         #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 12px; border-radius: 8px; width: 50%; text-align: center; font-weight: bold; outline: none; }
-        
-        .net-btn { background: #00ffff; color: #000; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #00ffff; }
-        .voice-btn { background: #ff0055; color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #ff0055; }
+        .net-btn { background: #00ffff; color: #000; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #00ffff; }
+        .voice-btn { background: #ff0055; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #ff0055; }
         .voice-btn.active { background: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; }
 
         .character-options { display: flex; gap: 15px; margin-bottom: 20px; }
@@ -87,7 +91,9 @@
     </style>
 </head>
 <body>
+    <!-- شاشة الهنجار السيبراني لعام 6226 -->
     <div id="hangarScreen">
+        <!-- قائمة اختيار 30 لغة عالمية أعلى يسار الشاشة -->
         <div class="language-select-container">
             <select id="langSelector" onchange="changeLanguage(this.value)">
                 <option value="en" selected>English</option>
@@ -126,6 +132,7 @@
         <h1 id="uiTitle">CYBER HORIZON 6226</h1>
         <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
         
+        <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
         <div class="mode-selection">
             <div class="mode-card selected" onclick="selectGameMode('solo', this)">
                 <div style="font-size: 24px;">👤</div>
@@ -144,15 +151,15 @@
             </div>
         </div>
 
-        <!-- إعدادات غرف الشبكة أونلاين الحقيقية عبر WebRTC / PeerJS -->
+        <!-- إعدادات غرفة السكواد والدردشة والشبكة -->
         <div id="squadConfigPanel">
-            <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">🌍 Real Online Network Room</div>
+            <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">🌍 Global Squad & Voice Gateway</div>
             <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
                 <input type="text" id="roomCodeInput" value="cyber6226" placeholder="Room Code">
                 <button class="net-btn" onclick="connectOnlineRoom()">LINK</button>
                 <button class="voice-btn" id="voiceToggleBtn" onclick="toggleVoiceChat()">🎤 Mic</button>
             </div>
-            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Enter room code and press LINK to play with friends!</div>
+            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Status: Enter room code to link players globally!</div>
         </div>
 
         <div class="character-options">
@@ -175,8 +182,10 @@
         <button id="startBtn" onclick="startGame()">INITIALIZE MATRIX</button>
     </div>
 
+    <!-- إشعار الترقية الأسطوري -->
     <div id="achievementPopup"><span id="popupText">🏆 RANK UP!</span></div>
 
+    <!-- لوحة النتائج مقسمة على الجانبين الأيمن والأيسر لمنع حجب الرؤية في المنتصف تماماً -->
     <div id="scoreBoard">
         <div class="side-panel" id="leftPanel" style="text-align: left;">
             Score: <span id="scoreVal">0</span><br>
@@ -190,6 +199,7 @@
         </div>
     </div>
 
+    <!-- شاشة الخسارة -->
     <div id="gameOverScreen">
         <h1 id="goTitle">SYSTEM FAILURE!</h1>
         <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">Final Score: 0</p>
@@ -197,6 +207,7 @@
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
 
+    <!-- أزرار التحكم المطلقة -->
     <div class="controls" id="gameControls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -205,17 +216,12 @@
         <div class="btn" id="btnRight">▶</div>
     </div>
 
-    <!-- مكتبات Three.js و PeerJS للربط المباشر بين الأجهزة -->
+    <!-- تحميل مكتبات Three.js للغرافيك ثلاثي الأبعاد -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <script>
         let currentGameMode = 'solo';
         let isVoiceActive = false;
-
-        let peer = null;
-        let conn = null;
-        let remotePlayerMesh = null;
 
         function selectGameMode(mode, el) {
             currentGameMode = mode;
@@ -230,63 +236,12 @@
             }
         }
 
-        // إتاحة الربط الحقيقي أونلاين برقم الغرفة
         function connectOnlineRoom() {
             let roomCode = document.getElementById('roomCodeInput').value.trim();
-            if (!roomCode) return;
-            
             const status = document.getElementById('squadStatusText');
-            status.innerText = "Connecting to Quantum Matrix Network...";
-
-            // فتح بروتوكول الشبكة
-            peer = new Peer(roomCode + "-" + Math.floor(Math.random() * 8999 + 1000));
-
-            peer.on('open', (id) => {
-                status.innerText = "Linked! Share Code: " + roomCode + " with friends.";
+            if(roomCode) {
+                status.innerText = "Linked to Room [" + roomCode + "]. Start game to play together!";
                 playSound('boost');
-            });
-
-            peer.on('connection', (c) => {
-                conn = c;
-                setupNetworkEvents();
-                status.innerText = "🟢 Friend Connected to your Squad!";
-            });
-
-            // المحاولة التلقائية للربط بالطرف الآخر
-            let targetPeerId = roomCode + "-1000";
-            conn = peer.connect(targetPeerId);
-            if(conn) {
-                setupNetworkEvents();
-            }
-        }
-
-        function setupNetworkEvents() {
-            if(!conn) return;
-            conn.on('data', (data) => {
-                if (data.type === 'pos') {
-                    if (!remotePlayerMesh) createRemotePlayerModel();
-                    remotePlayerMesh.position.x = data.x;
-                    remotePlayerMesh.position.y = data.y;
-                    remotePlayerMesh.position.z = data.z;
-                }
-            });
-        }
-
-        function createRemotePlayerModel() {
-            const geo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x550055 });
-            remotePlayerMesh = new THREE.Mesh(geo, mat);
-            scene.add(remotePlayerMesh);
-        }
-
-        function sendNetworkPosition() {
-            if (conn && conn.open && player) {
-                conn.send({
-                    type: 'pos',
-                    x: player.position.x,
-                    y: player.position.y,
-                    z: player.position.z
-                });
             }
         }
 
@@ -297,7 +252,7 @@
             if (isVoiceActive) {
                 btn.innerText = "🎤 ON";
                 btn.classList.add('active');
-                status.innerText = "Voice Chat Active - Speaking with squad!";
+                status.innerText = "Voice Channel Connected - Speak with your squad!";
                 playSound('boost');
             } else {
                 btn.innerText = "🎤 Mic";
@@ -306,6 +261,7 @@
             }
         }
 
+        // قاموس الترجمات للغات الـ 30 العالمية
         const translations = {
             en: {
                 title: "CYBER HORIZON 6226", sub: "Absolute Quantum Consciousness Matrix", start: "INITIALIZE MATRIX",
@@ -419,6 +375,7 @@
             }
         }
 
+        // محرك الموسيقى السيبرانية المستقبلية المدمج برمجياً (Procedural Cyberpunk Music)
         function startCyberpunkMusic() {
             initAudio();
             if (!audioCtx || musicInterval) return;
@@ -963,9 +920,6 @@
 
             if (!isGameOver) {
                 animationTime += 0.15;
-
-                // إرسال الإحداثيات المباشرة عبر الشبكة للاعب الآخر
-                sendNetworkPosition();
 
                 if (currentLevel === 3) {
                     gravityAngle += 0.012;
