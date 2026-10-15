@@ -600,15 +600,31 @@
             el.addEventListener('mouseup', onRelease);
         };
 
-        setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
-        setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
-        setupBtn('btnJump', () => {
+        function handleJump() {
             if (isGrounded && !isGameOver) {
                 playerVelocityY = 0.33;
                 isGrounded = false;
                 playSound('jump');
             }
-        }, () => {});
+        }
+
+        setupBtn('btnLeft', () => moveLeft = true, () => moveLeft = false);
+        setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
+        setupBtn('btnJump', handleJump, () => {});
+
+        // إضافة دعم لوحة المفاتيح (Keyboard Controls)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft = true;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = true;
+            if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') handleJump();
+            if (e.code === 'KeyT' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') triggerTimeWarp();
+            if (e.code === 'KeyF' || e.code === 'Enter') fireQuantumPulse();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft = false;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = false;
+        });
 
         function triggerTimeWarp() {
             if (isGameOver || quantumEnergy < 50) return;
