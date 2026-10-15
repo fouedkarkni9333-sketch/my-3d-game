@@ -7,7 +7,6 @@
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         
-        /* لوحة النتائج مقسمة على الجانب الأيمن واليسار لحجب الرؤية عن المنتصف تماماً */
         #scoreBoard { 
             position: absolute; 
             top: 15px; 
@@ -39,10 +38,8 @@
         #energyContainer { width: 140px; height: 8px; background: rgba(255,255,255,0.2); border: 1px solid #00ffff; border-radius: 4px; margin-top: 4px; overflow: hidden; box-shadow: 0 0 8px rgba(0,255,255,0.5); }
         #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055, #ffd700); transition: width 0.2s ease; }
         
-        /* شاشة الهنجار الأبعادي لعام 6226 والإعدادات */
         #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a021f 0%, #010005 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(20px); overflow-y: auto; padding: 20px; box-sizing: border-box;}
         
-        /* موقع قائمة اللغات في أعلى اليسار فوق عنوان اللعبة */
         .language-select-container { position: absolute; top: 15px; left: 20px; z-index: 40; }
         .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
         .language-select-container select option { background: #050214; color: #fff; }
@@ -50,19 +47,18 @@
         #hangarScreen h1 { font-size: 36px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
         #hangarScreen p { font-size: 14px; color: #ff0055; margin-bottom: 15px; text-shadow: 0 0 12px #ff0055; }
         
-        /* أنماط اللعب الثلاثة: Solo, Duo, Squad 6+ */
         .mode-selection { display: flex; gap: 15px; margin-bottom: 15px; }
         .mode-card { width: 110px; padding: 10px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
         .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
         .mode-card h4 { margin: 5px 0; color: #fff; font-size: 14px; }
         .mode-card span { font-size: 11px; color: #aaa; }
 
-        /* نافذة إعدادات الغرفة الصوتية والشبكة أونلاين */
-        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 320px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
-        #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 12px; border-radius: 8px; width: 50%; text-align: center; font-weight: bold; outline: none; }
+        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 340px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
+        #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 10px; border-radius: 8px; width: 42%; text-align: center; font-weight: bold; outline: none; margin: 3px; }
         .net-btn { background: #00ffff; color: #000; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #00ffff; }
         .voice-btn { background: #ff0055; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #ff0055; }
         .voice-btn.active { background: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; }
+        #partyMemberList { background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.2); border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 12px; color: #ffd700; text-align: left; max-height: 80px; overflow-y: auto; }
 
         .character-options { display: flex; gap: 15px; margin-bottom: 20px; }
         .char-card { width: 120px; padding: 12px; background: rgba(255,255,255,0.04); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(0,255,255,0.1); }
@@ -91,9 +87,7 @@
     </style>
 </head>
 <body>
-    <!-- شاشة الهنجار السيبراني لعام 6226 -->
     <div id="hangarScreen">
-        <!-- قائمة اختيار 30 لغة عالمية أعلى يسار الشاشة -->
         <div class="language-select-container">
             <select id="langSelector" onchange="changeLanguage(this.value)">
                 <option value="en" selected>English</option>
@@ -132,7 +126,6 @@
         <h1 id="uiTitle">CYBER HORIZON 6226</h1>
         <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
         
-        <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
         <div class="mode-selection">
             <div class="mode-card selected" onclick="selectGameMode('solo', this)">
                 <div style="font-size: 24px;">👤</div>
@@ -151,15 +144,16 @@
             </div>
         </div>
 
-        <!-- إعدادات غرفة السكواد والدردشة والشبكة -->
         <div id="squadConfigPanel">
             <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">🌍 Global Squad & Voice Gateway</div>
             <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
+                <input type="text" id="playerNameInput" value="Player" placeholder="Your Name">
                 <input type="text" id="roomCodeInput" value="cyber6226" placeholder="Room Code">
-                <button class="net-btn" onclick="connectOnlineRoom()">LINK</button>
+                <button class="net-btn" onclick="joinPartyLobby()">JOIN</button>
                 <button class="voice-btn" id="voiceToggleBtn" onclick="toggleVoiceChat()">🎤 Mic</button>
             </div>
             <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Status: Enter room code to link players globally!</div>
+            <div id="partyMemberList">Party Members: None</div>
         </div>
 
         <div class="character-options">
@@ -179,13 +173,11 @@
                 <span id="c3Desc">Anti-Gravity</span>
             </div>
         </div>
-        <button id="startBtn" onclick="startGame()">INITIALIZE MATRIX</button>
+        <button id="startBtn" onclick="requestStartGame()">INITIALIZE MATRIX</button>
     </div>
 
-    <!-- إشعار الترقية الأسطوري -->
     <div id="achievementPopup"><span id="popupText">🏆 RANK UP!</span></div>
 
-    <!-- لوحة النتائج مقسمة على الجانبين الأيمن والأيسر لمنع حجب الرؤية في المنتصف تماماً -->
     <div id="scoreBoard">
         <div class="side-panel" id="leftPanel" style="text-align: left;">
             Score: <span id="scoreVal">0</span><br>
@@ -199,7 +191,6 @@
         </div>
     </div>
 
-    <!-- شاشة الخسارة -->
     <div id="gameOverScreen">
         <h1 id="goTitle">SYSTEM FAILURE!</h1>
         <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">Final Score: 0</p>
@@ -207,7 +198,6 @@
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
 
-    <!-- أزرار التحكم المطلقة -->
     <div class="controls" id="gameControls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -216,43 +206,68 @@
         <div class="btn" id="btnRight">▶</div>
     </div>
 
-    <!-- تحميل مكتبات Three.js للغرافيك ثلاثي الأبعاد -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- مكتبة Socket.io للاتصال بالسيرفر الحقيقي أونلاين -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // 🌐 إضافات الاتصال الجماعي الحقيقي (Socket.io) دون المساس بكودك الأصلي
         let socket = null;
         let remotePlayers = {};
-        const RENDER_SERVER_URL = 'https://رابط_السيرفر_الخاص_بك_على_ريندر.onrender.com';
+        let isPartyLeader = false;
 
-        function initSocketConnection() {
-            socket = io(RENDER_SERVER_URL, { transports: ['websocket', 'polling'] });
+        // 🔗 ضع رابط سيرفر Render الفعلي الخاص بك هنا
+        const RENDER_SERVER_URL = 'https://e-66js.onrender.com';
 
-            socket.on('connect', () => {
-                document.getElementById('squadStatusText').innerText = "Status: Connected to Server Online!";
-            });
+        function joinPartyLobby() {
+            let roomCode = document.getElementById('roomCodeInput').value.trim();
+            let playerName = document.getElementById('playerNameInput').value.trim() || "Player";
 
-            socket.on('update_players', (players) => {
-                for (let id in players) {
-                    if (id !== socket.id && !remotePlayers[id]) {
-                        createRemotePlayer(id, players[id].vehicle);
+            if (!socket) {
+                socket = io(RENDER_SERVER_URL, { transports: ['websocket', 'polling'] });
+
+                socket.on('connect', () => {
+                    socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+                });
+
+                socket.on('update_party', (partyData) => {
+                    let memberListHtml = "<b>Party Members:</b><br>";
+                    isPartyLeader = (partyData.leader === socket.id);
+
+                    for (let id in partyData.players) {
+                        let p = partyData.players[id];
+                        let isLeaderTag = (id === partyData.leader) ? ' 👑 [Leader]' : '';
+                        memberListHtml += `- ${p.name}${isLeaderTag}<br>`;
                     }
-                }
-                for (let id in remotePlayers) {
-                    if (!players[id]) {
-                        scene.remove(remotePlayers[id]);
-                        delete remotePlayers[id];
-                    }
-                }
-            });
+                    document.getElementById('partyMemberList').innerHTML = memberListHtml;
+                    document.getElementById('squadStatusText').innerText = isPartyLeader ? "Status: You are Party Leader 👑" : "Status: Joined Party Room";
+                });
 
-            socket.on('player_moved', (data) => {
-                if (remotePlayers[data.id]) {
-                    remotePlayers[data.id].position.set(data.x, data.y, data.z);
-                }
-            });
+                socket.on('launch_game_for_all', () => {
+                    launchGameSession();
+                });
+
+                socket.on('update_players', (players) => {
+                    for (let id in players) {
+                        if (id !== socket.id && !remotePlayers[id]) {
+                            createRemotePlayer(id, players[id].vehicle);
+                        }
+                    }
+                    for (let id in remotePlayers) {
+                        if (!players[id]) {
+                            scene.remove(remotePlayers[id]);
+                            delete remotePlayers[id];
+                        }
+                    }
+                });
+
+                socket.on('player_moved', (data) => {
+                    if (remotePlayers[data.id]) {
+                        remotePlayers[data.id].position.set(data.x, data.y, data.z);
+                    }
+                });
+            } else {
+                socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+            }
+            playSound('boost');
         }
 
         function createRemotePlayer(id, type) {
@@ -263,11 +278,29 @@
             remotePlayers[id] = mesh;
         }
 
-        window.addEventListener('load', () => {
-            initSocketConnection();
-        });
+        function requestStartGame() {
+            if (currentGameMode === 'squad' || currentGameMode === 'duo') {
+                if (socket && isPartyLeader) {
+                    socket.emit('start_game_party');
+                } else if (socket && !isPartyLeader) {
+                    alert("Only the Party Leader can start the match for everyone!");
+                } else {
+                    alert("Please JOIN the party room first!");
+                }
+            } else {
+                launchGameSession();
+            }
+        }
 
-        // بداية كودك الأصلي تماماً كما أرسلته
+        function launchGameSession() {
+            buildPlayerModel();
+            document.getElementById('hangarScreen').style.display = 'none';
+            document.getElementById('scoreBoard').style.display = 'flex';
+            document.getElementById('gameControls').style.display = 'flex';
+            startCyberpunkMusic();
+            resetGame();
+        }
+
         let currentGameMode = 'solo';
         let isVoiceActive = false;
 
@@ -281,17 +314,6 @@
                 panel.style.display = 'block';
             } else {
                 panel.style.display = 'none';
-            }
-        }
-
-        function connectOnlineRoom() {
-            let roomCode = document.getElementById('roomCodeInput').value.trim();
-            let playerName = "Player";
-            const status = document.getElementById('squadStatusText');
-            if(roomCode && socket) {
-                socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
-                status.innerText = "Linked to Room [" + roomCode + "]. Start game to play together!";
-                playSound('boost');
             }
         }
 
@@ -311,7 +333,6 @@
             }
         }
 
-        // قاموس الترجمات للغات الـ 30 العالمية
         const translations = {
             en: {
                 title: "CYBER HORIZON 6226", sub: "Absolute Quantum Consciousness Matrix", start: "INITIALIZE MATRIX",
@@ -425,7 +446,6 @@
             }
         }
 
-        // محرك الموسيقى السيبرانية المستقبلية المدمج برمجياً (Procedural Cyberpunk Music)
         function startCyberpunkMusic() {
             initAudio();
             if (!audioCtx || musicInterval) return;
@@ -869,21 +889,6 @@
             setTimeout(() => { pop.style.opacity = '0'; }, 2500);
         }
 
-        function startGame() {
-            // 🌐 إرسال الانضمام للسيرفر عند بدء اللعب
-            let roomCode = document.getElementById('roomCodeInput').value.trim();
-            if (socket && roomCode) {
-                socket.emit('join_room', { roomCode: roomCode, playerName: "Player", vehicleType: selectedCharType });
-            }
-
-            buildPlayerModel();
-            document.getElementById('hangarScreen').style.display = 'none';
-            document.getElementById('scoreBoard').style.display = 'flex';
-            document.getElementById('gameControls').style.display = 'flex';
-            startCyberpunkMusic();
-            resetGame();
-        }
-
         function updateLevelSystem() {
             let t = translations[currentLang] || translations.en;
             let oldLevel = currentLevel;
@@ -1121,7 +1126,6 @@
                     }
                 }
 
-                // 🌐 بث إحداثيات اللاعب الحيّة للأصدقاء أونلاين
                 if (socket) {
                     socket.emit('player_move', {
                         x: player.position.x,
@@ -1142,16 +1146,6 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-    <!-- تحميل مكتبة Socket.io للاتصال الحقيقي أونلاين -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-        // تفعيل الاتصال بالسيرفر السحابي
-        window.addEventListener('load', () => {
-            if (typeof initSocketConnection === 'function') {
-                initSocketConnection();
-            }
         });
     </script>
 </body>
