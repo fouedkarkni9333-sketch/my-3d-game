@@ -207,6 +207,9 @@
         <h1 id="goTitle">SYSTEM FAILURE!</h1>
         <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">Final Score: 0</p>
         <p id="highScoreMsg" style="font-size: 18px; color: #ffd700; margin: 5px 0 15px 0;"></p>
+        <div id="globalLeaderboardBox" style="background: rgba(0,255,255,0.1); border: 1px solid #00ffff; border-radius: 10px; padding: 10px; width: 280px; margin: 10px auto; font-size: 12px; color: #00ffff; text-align: left;">
+            <b>🌐 Global Leaderboard:</b><br><span id="leaderboardList">Loading...</span>
+        </div>
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
 
@@ -279,6 +282,14 @@
                     if (remotePlayers[data.id]) {
                         remotePlayers[data.id].position.set(data.x, data.y, data.z);
                     }
+                });
+
+                socket.on('update_leaderboard', (boardData) => {
+                    let html = "";
+                    boardData.forEach((item, index) => {
+                        html += `${index + 1}. ${item.name}: <b>${item.score} pts</b><br>`;
+                    });
+                    document.getElementById('leaderboardList').innerHTML = html || "No records yet.";
                 });
             } else {
                 socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
