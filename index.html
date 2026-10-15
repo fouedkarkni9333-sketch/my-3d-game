@@ -218,8 +218,56 @@
 
     <!-- تحميل مكتبات Three.js للغرافيك ثلاثي الأبعاد -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- مكتبة Socket.io للاتصال بالسيرفر الحقيقي أونلاين -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
+        // 🌐 إضافات الاتصال الجماعي الحقيقي (Socket.io) دون المساس بكودك الأصلي
+        let socket = null;
+        let remotePlayers = {};
+        const RENDER_SERVER_URL = 'https://رابط_السيرفر_الخاص_بك_على_ريندر.onrender.com';
+
+        function initSocketConnection() {
+            socket = io(RENDER_SERVER_URL, { transports: ['websocket', 'polling'] });
+
+            socket.on('connect', () => {
+                document.getElementById('squadStatusText').innerText = "Status: Connected to Server Online!";
+            });
+
+            socket.on('update_players', (players) => {
+                for (let id in players) {
+                    if (id !== socket.id && !remotePlayers[id]) {
+                        createRemotePlayer(id, players[id].vehicle);
+                    }
+                }
+                for (let id in remotePlayers) {
+                    if (!players[id]) {
+                        scene.remove(remotePlayers[id]);
+                        delete remotePlayers[id];
+                    }
+                }
+            });
+
+            socket.on('player_moved', (data) => {
+                if (remotePlayers[data.id]) {
+                    remotePlayers[data.id].position.set(data.x, data.y, data.z);
+                }
+            });
+        }
+
+        function createRemotePlayer(id, type) {
+            const geo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x550055, wireframe: true });
+            const mesh = new THREE.Mesh(geo, mat);
+            scene.add(mesh);
+            remotePlayers[id] = mesh;
+        }
+
+        window.addEventListener('load', () => {
+            initSocketConnection();
+        });
+
+        // بداية كودك الأصلي تماماً كما أرسلته
         let currentGameMode = 'solo';
         let isVoiceActive = false;
 
@@ -238,8 +286,10 @@
 
         function connectOnlineRoom() {
             let roomCode = document.getElementById('roomCodeInput').value.trim();
+            let playerName = "Player";
             const status = document.getElementById('squadStatusText');
-            if(roomCode) {
+            if(roomCode && socket) {
+                socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
                 status.innerText = "Linked to Room [" + roomCode + "]. Start game to play together!";
                 playSound('boost');
             }
@@ -820,6 +870,12 @@
         }
 
         function startGame() {
+            // 🌐 إرسال الانضمام للسيرفر عند بدء اللعب
+            let roomCode = document.getElementById('roomCodeInput').value.trim();
+            if (socket && roomCode) {
+                socket.emit('join_room', { roomCode: roomCode, playerName: "Player", vehicleType: selectedCharType });
+            }
+
             buildPlayerModel();
             document.getElementById('hangarScreen').style.display = 'none';
             document.getElementById('scoreBoard').style.display = 'flex';
@@ -1065,6 +1121,16 @@
                     }
                 }
 
+                // 🌐 بث إحداثيات اللاعب الحيّة للأصدقاء أونلاين
+                if (socket) {
+                    socket.emit('player_move', {
+                        x: player.position.x,
+                        y: player.position.y,
+                        z: player.position.z,
+                        score: score
+                    });
+                }
+
                 camera.position.x = player.position.x * 0.4;
             }
 
@@ -1076,6 +1142,16 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+    <!-- تحميل مكتبة Socket.io للاتصال الحقيقي أونلاين -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // تفعيل الاتصال بالسيرفر السحابي
+        window.addEventListener('load', () => {
+            if (typeof initSocketConnection === 'function') {
+                initSocketConnection();
+            }
         });
     </script>
 </body>
