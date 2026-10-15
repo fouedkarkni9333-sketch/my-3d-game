@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المكعب ثلاثية الأبعاد - تصميم محسّن</title>
+    <title>لعبة المكعب ثلاثية الأبعاد - جاذبية وحركات متطورة</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: white; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px black; z-index: 10; line-height: 1.5; }
@@ -60,19 +60,35 @@
             if (type === 'jump') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+                osc.frequency.exponentialRampToValueAtTime(450, now + 0.18);
                 gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
                 osc.start(now);
-                osc.stop(now + 0.15);
+                osc.stop(now + 0.18);
             } else if (type === 'crash') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(120, now);
-                osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+                osc.frequency.linearRampToValueAtTime(30, now + 0.35);
                 gainNode.gain.setValueAtTime(0.5, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
                 osc.start(now);
-                osc.stop(now + 0.3);
+                osc.stop(now + 0.35);
+            } else if (type === 'collect') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'boost') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(660, now + 0.25);
+                gainNode.gain.setValueAtTime(0.4, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
             }
         }
 
@@ -99,24 +115,21 @@
         platform.position.set(0, -1, -20);
         scene.add(platform);
 
-        // --- تصميم اللاعب المحسّن (شخصية روبوت ثلاثية الأبعاد) ---
+        // تصميم اللاعب المحسّن (روبوت متفاعل)
         const player = new THREE.Group();
 
-        // جسم الروبوت
         const bodyGeo = new THREE.BoxGeometry(0.6, 0.7, 0.4);
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3498db, metalness: 0.3, roughness: 0.4 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.y = 0.35;
         player.add(bodyMesh);
 
-        // رأس الروبوت
         const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.4);
         const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.2 });
         const headMesh = new THREE.Mesh(headGeo, headMat);
         headMesh.position.y = 0.85;
         player.add(headMesh);
 
-        // عيون الروبوت (توهج باللون الأحمر/الأبيض)
         const eyeGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         
@@ -128,20 +141,6 @@
         rightEye.position.set(0.12, 0.88, 0.21);
         player.add(rightEye);
 
-        // هوائي الروبوت في الأعلى
-        const antennaRodGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.2);
-        const antennaMat = new THREE.MeshStandardMaterial({ color: 0x7f8c8d });
-        const antennaRod = new THREE.Mesh(antennaRodGeo, antennaMat);
-        antennaRod.position.set(0, 1.15, 0);
-        player.add(antennaRod);
-
-        const antennaBallGeo = new THREE.SphereGeometry(0.06, 8, 8);
-        const antennaBallMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
-        const antennaBall = new THREE.Mesh(antennaBallGeo, antennaBallMat);
-        antennaBall.position.set(0, 1.28, 0);
-        player.add(antennaBall);
-
-        // ضبط موضع مجموعة اللاعب الرئيسية في المشهد
         player.position.set(0, 0, 0);
         scene.add(player);
 
@@ -151,21 +150,30 @@
         let moveLeft = false, moveRight = false;
         let playerVelocityY = 0;
         let isGrounded = true;
-        const gravity = -0.015;
+        const gravity = -0.018; // جاذبية أسرع وأكثر حماساً
         
         let score = 0;
-        let gameSpeed = 0.12;
+        let baseGameSpeed = 0.12;
+        let gameSpeed = baseGameSpeed;
         let isGameOver = false;
+        let boostTimer = 0;
+        let animationTime = 0;
 
         let highScore = localStorage.getItem('threeGameHighScore') || 0;
         document.getElementById('highScoreDisplay').innerText = highScore;
 
+        // العوائق المتنوعة
         let obstacles = [];
-        const obsGeo = new THREE.BoxGeometry(1, 1, 1);
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
+        const obsGeos = [
+            new THREE.BoxGeometry(1, 1, 1),           
+            new THREE.SphereGeometry(0.6, 8, 8),     
+            new THREE.ConeGeometry(0.6, 1.2, 4)      
+        ];
+        const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000, roughness: 0.2 });
 
         function spawnObstacle(zPos) {
-            const obstacle = new THREE.Mesh(obsGeo, obsMat);
+            const randomGeo = obsGeos[Math.floor(Math.random() * obsGeos.length)];
+            const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
             obstacle.position.set(randomX, 0, zPos);
             scene.add(obstacle);
@@ -175,6 +183,27 @@
         spawnObstacle(-25);
         spawnObstacle(-45);
         spawnObstacle(-65);
+
+        // العناصر المساعدة
+        let collectibles = [];
+        const starGeo = new THREE.OctahedronGeometry(0.4);
+        const starMat = new THREE.MeshBasicMaterial({ color: 0xffd700 }); 
+
+        const boostGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 8);
+        const boostMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); 
+
+        function spawnCollectible(zPos) {
+            const isBoost = Math.random() > 0.7; 
+            const item = new THREE.Mesh(isBoost ? boostGeo : starGeo, isBoost ? boostMat : starMat);
+            item.userData = { type: isBoost ? 'boost' : 'star' };
+            const randomX = (Math.random() - 0.5) * 3;
+            item.position.set(randomX, 0.5, zPos);
+            scene.add(item);
+            collectibles.push(item);
+        }
+
+        spawnCollectible(-35);
+        spawnCollectible(-55);
 
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
@@ -189,28 +218,35 @@
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
             if (isGrounded && !isGameOver) {
-                playerVelocityY = 0.25;
+                playerVelocityY = 0.32; // قفزة أعلى وأكثر نشاطاً
                 isGrounded = false;
                 playSound('jump');
             }
         }, () => {});
 
         function updateScoreDisplay() {
+            let speedStatus = boostTimer > 0 ? " | ⚡ سرعة فائقة!" : "";
             document.getElementById('scoreBoard').innerHTML = 
-                `النقاط: ${score}<br><span style="font-size: 16px; color: #ffd700;">أعلى نتيجة: ${highScore}</span>`;
+                `النقاط: ${score}${speedStatus}<br><span style="font-size: 16px; color: #ffd700;">أعلى نتيجة: ${highScore}</span>`;
         }
 
         function resetGame() {
             isGameOver = false;
             score = 0;
-            gameSpeed = 0.12;
+            baseGameSpeed = 0.12;
+            gameSpeed = baseGameSpeed;
+            boostTimer = 0;
             currentSkyIndex = 0;
             scene.background.setHex(skyColors[0]);
             player.position.set(0, 0, 0);
+            player.rotation.z = 0;
             
             obstacles[0].position.set(0, 0, -25);
             obstacles[1].position.set(0, 0, -45);
             obstacles[2].position.set(0, 0, -65);
+
+            collectibles[0].position.set(0, 0.5, -35);
+            collectibles[1].position.set(0, 0.5, -55);
 
             updateScoreDisplay();
             document.getElementById('gameOverScreen').style.display = 'none';
@@ -220,38 +256,71 @@
             requestAnimationFrame(animate);
 
             if (!isGameOver) {
-                if (moveLeft && player.position.x > -2.2) player.position.x -= 0.08;
-                if (moveRight && player.position.x < 2.2) player.position.x += 0.08;
+                animationTime += 0.15;
 
+                // إدارة السرعة المؤقتة
+                if (boostTimer > 0) {
+                    boostTimer--;
+                    gameSpeed = baseGameSpeed * 1.8;
+                    if (boostTimer === 0) {
+                        gameSpeed = baseGameSpeed;
+                        updateScoreDisplay();
+                    }
+                }
+
+                // نظام الحركة الجانبية مع الميلان الديناميكي
+                if (moveLeft && player.position.x > -2.2) {
+                    player.position.x -= 0.09;
+                    if (player.rotation.z < 0.3) player.rotation.z += 0.05;
+                } else if (moveRight && player.position.x < 2.2) {
+                    player.position.x += 0.09;
+                    if (player.rotation.z > -0.3) player.rotation.z -= 0.05;
+                } else {
+                    // إعادة ضبط الميلان بسلاسة عند التوقف
+                    player.rotation.z *= 0.8;
+                }
+
+                // تطبيق نظام الجاذبية والحركات التفاعلية
                 player.position.y += playerVelocityY;
                 if (!isGrounded) {
                     playerVelocityY += gravity;
+                    // حركة دوران خفيفة أثناء القفز
+                    player.rotation.x += 0.04;
                     if (player.position.y <= 0) {
                         player.position.y = 0;
                         playerVelocityY = 0;
                         isGrounded = true;
+                        player.rotation.x = 0;
                     }
+                } else {
+                    // حركة اهتزاز وتأرجح خفيفة أثناء الجري على الأرض
+                    bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2) * 0.05;
+                    headMesh.position.y = 0.85 + Math.cos(animationTime * 2) * 0.03;
                 }
 
+                // تحريك وإدارة العوائق
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
                     obs.position.z += gameSpeed;
+                    obs.rotation.x += 0.02;
+                    obs.rotation.y += 0.03;
 
                     if (obs.position.z > 4) {
                         obs.position.z = -70;
                         obs.position.x = (Math.random() - 0.5) * 3;
                         score += 5;
-                        gameSpeed += 0.002;
+                        baseGameSpeed += 0.001;
+                        if (boostTimer === 0) gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
 
-                        let newSkyIndex = Math.floor(score / 30) % skyColors.length;
+                        let newSkyIndex = Math.floor(score / 40) % skyColors.length;
                         if (newSkyIndex !== currentSkyIndex) {
                             currentSkyIndex = newSkyIndex;
                             scene.background.setHex(skyColors[currentSkyIndex]);
                         }
                     }
 
-                    // فحص الاصطدام (باستخدام موقع إحداثيات مجموعة الروبوت)
+                    // فحص الاصطدام مع العوائق
                     if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
                         Math.abs(player.position.x - obs.position.x) < 0.8 &&
                         player.position.y < 0.6) {
@@ -269,6 +338,37 @@
                         document.getElementById('highScoreMsg').innerText = isNewHighScore ? "🎉 رقم قياسي جديد!" : "أعلى نتيجة: " + highScore;
                         document.getElementById('gameOverScreen').style.display = 'flex';
                         document.getElementById('highScoreDisplay').innerText = highScore;
+                    }
+                }
+
+                // تحريك وإدارة العناصر المساعدة
+                for (let j = 0; j < collectibles.length; j++) {
+                    let item = collectibles[j];
+                    item.position.z += gameSpeed;
+                    item.rotation.y += 0.07;
+                    item.rotation.z += 0.04;
+
+                    if (item.position.z > 4) {
+                        item.position.z = -60;
+                        item.position.x = (Math.random() - 0.5) * 3;
+                    }
+
+                    // فحص جمع العنصر
+                    if (Math.abs(player.position.z - item.position.z) < 0.8 &&
+                        Math.abs(player.position.x - item.position.x) < 0.8 &&
+                        player.position.y < 1.0) {
+                        
+                        if (item.userData.type === 'star') {
+                            score += 15;
+                            playSound('collect');
+                        } else if (item.userData.type === 'boost') {
+                            boostTimer = 180; 
+                            playSound('boost');
+                        }
+                        updateScoreDisplay();
+
+                        item.position.z = -60;
+                        item.position.x = (Math.random() - 0.5) * 3;
                     }
                 }
 
