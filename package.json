@@ -1,12 +1,13 @@
 {
-  "name": "my-3d-game",
+  "name": "cyber-horizon-server",
   "version": "1.0.0",
+  "description": "Multiplayer backend server for Cyber Horizon 6226",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.19.2",
     "socket.io": "^4.7.2"
   }
 }
