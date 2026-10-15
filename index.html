@@ -1059,17 +1059,18 @@
 
                     for (let i = 0; i < obstacles.length; i++) {
                         let obs = obstacles[i];
-                        let aiDynamicFactor = 1 + (currentLevel - 1) * 0.15 + (score * 0.0001);
+                        // أنظمة الذكاء الاصطناعي الفائق لتوليد تحديات غير مسبوقة تزيد الإدمان
+                        let aiDynamicFactor = 1 + (currentLevel - 1) * 0.18 + (score * 0.00015);
                         let currentObsSpeed = gameSpeed * aiDynamicFactor;
                         obs.position.z += currentObsSpeed;
-                        obs.rotation.x += 0.03;
-                        obs.rotation.y += 0.04;
+                        obs.rotation.x += 0.04;
+                        obs.rotation.y += 0.05;
 
                         if (obs.position.z > 4) {
                             obs.position.z = -80;
                             obs.position.x = (Math.random() - 0.5) * 3;
                             score += 5;
-                            baseGameSpeed += 0.0012;
+                            baseGameSpeed += 0.0014;
                             if (boostTimer === 0) gameSpeed = baseGameSpeed;
                             updateScoreDisplay();
                         }
@@ -1108,8 +1109,8 @@
                     for (let j = 0; j < collectibles.length; j++) {
                         let item = collectibles[j];
                         item.position.z += gameSpeed;
-                        item.rotation.y += 0.08;
-                        item.rotation.z += 0.05;
+                        item.rotation.y += 0.1;
+                        item.rotation.z += 0.07;
 
                         if (item.position.z > 4) {
                             item.position.z = -70;
