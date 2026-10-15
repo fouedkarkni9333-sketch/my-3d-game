@@ -4,86 +4,119 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
+
+// إعدادات الـ CORS لضمان توافق الاتصال مع أي نطاق (Domain)
 const io = new Server(server, {
-    cors: { origin: "*" }
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
-let rooms = {};
+app.get('/', (req, res) => {
+    res.send('Cyber Horizon 6226 Multiplayer Quantum Server is Online & Active!');
+});
+
+// تخزين بيانات الغرف واللاعبين
+const rooms = {}; // roomCode -> { leader: socketId, players: { socketId: { name, vehicle, x, y, z, score } } }
 
 io.on('connection', (socket) => {
-    console.log('A player connected:', socket.id);
+    console.log(`⚡ New Quantum Connection: ${socket.id}`);
 
+    // انضمام اللاعب إلى الغرفة أو اللوبي
     socket.on('join_room', (data) => {
-        let roomCode = data.roomCode || 'cyber6226';
-        let playerName = data.playerName || 'Player';
-        let vehicleType = data.vehicleType || 0;
+        const { roomCode, playerName, vehicleType } = data;
+        
+        // إذا كان هناك غرفة قديمة للاعب، نخرجه منها أولاً
+        leaveAllRooms(socket);
 
         socket.join(roomCode);
         socket.roomCode = roomCode;
-        socket.playerName = playerName;
+        socket.playerName = playerName || "Player";
 
         if (!rooms[roomCode]) {
             rooms[roomCode] = {
-                leader: socket.id,
+                leader: socket.id, // أول شخص ينشئ الغرفة يصبح قائد الفريق تلقائياً
                 players: {}
             };
         }
 
         rooms[roomCode].players[socket.id] = {
-            id: socket.id,
-            name: playerName,
-            vehicle: vehicleType,
+            name: socket.playerName,
+            vehicle: vehicleType || 0,
             x: 0, y: 0, z: 0,
             score: 0
         };
 
+        console.log(`👤 Player [${socket.playerName}] joined room: ${roomCode}`);
+
+        // تحديث بيانات البارتي والغرفة لجميع المتواجدين
         io.to(roomCode).emit('update_party', rooms[roomCode]);
         io.to(roomCode).emit('update_players', rooms[roomCode].players);
     });
 
-    socket.on('player_move', (data) => {
-        let roomCode = socket.roomCode;
-        if (roomCode && rooms[roomCode] && rooms[roomCode].players[socket.id]) {
-            rooms[roomCode].players[socket.id].x = data.x;
-            rooms[roomCode].players[socket.id].y = data.y;
-            rooms[roomCode].players[socket.id].z = data.z;
-            rooms[roomCode].players[socket.id].score = data.score;
-
-            socket.to(roomCode).emit('player_moved', {
-                id: socket.id,
-                x: data.x,
-                y: data.y,
-                z: data.z
-            });
-        }
-    });
-
+    // بدء اللعبة جماعياً من قِبل قائد الفريق (Party Leader) فقط
     socket.on('start_game_party', () => {
-        let roomCode = socket.roomCode;
+        const roomCode = socket.roomCode;
         if (roomCode && rooms[roomCode] && rooms[roomCode].leader === socket.id) {
+            console.log(`🚀 Party Leader [${socket.id}] launched the game for room: ${roomCode}`);
             io.to(roomCode).emit('launch_game_for_all');
         }
     });
 
+    // استقبال وتحديث إحداثيات وتحركات اللاعب بثاً حياً
+    socket.on('player_move', (posData) => {
+        const roomCode = socket.roomCode;
+        if (roomCode && rooms[roomCode] && rooms[roomCode].players[socket.id]) {
+            let p = rooms[roomCode].players[socket.id];
+            p.x = posData.x;
+            p.y = posData.y;
+            p.z = posData.z;
+            p.score = posData.score;
+
+            // بث الحركة لباقي اللاعبين في نفس الغرفة
+            socket.to(roomCode).emit('player_moved', {
+                id: socket.id,
+                x: p.x,
+                y: p.y,
+                z: p.z
+            });
+        }
+    });
+
+    // عند انقطاع الاتصال أو خروج اللاعب
     socket.on('disconnect', () => {
-        let roomCode = socket.roomCode;
+        console.log(`❌ Player Disconnected: ${socket.id}`);
+        leaveAllRooms(socket);
+    });
+
+    function leaveAllRooms(sock) {
+        const roomCode = sock.roomCode;
         if (roomCode && rooms[roomCode]) {
-            delete rooms[roomCode].players[socket.id];
-            if (Object.keys(rooms[roomCode].players).length === 0) {
-                delete rooms[roomCode];
-            } else {
-                if (rooms[roomCode].leader === socket.id) {
-                    rooms[roomCode].leader = Object.keys(rooms[roomCode].players)[0];
+            if (rooms[roomCode].players[sock.id]) {
+                delete rooms[roomCode].players[sock.id];
+            }
+
+            // إذا خرج قائد الفريق، نعين قائداً جديداً تلقائياً لمن تبقى في الغرفة
+            if (rooms[roomCode].leader === sock.id) {
+                const remainingIds = Object.keys(rooms[roomCode].players);
+                if (remainingIds.length > 0) {
+                    rooms[roomCode].leader = remainingIds[0];
+                } else {
+                    delete rooms[roomCode]; // حذف الغرفة إن كانت فارغة تماماً
                 }
+            }
+
+            if (rooms[roomCode]) {
                 io.to(roomCode).emit('update_party', rooms[roomCode]);
                 io.to(roomCode).emit('update_players', rooms[roomCode].players);
             }
+            sock.roomCode = null;
         }
-        console.log('A player disconnected:', socket.id);
-    });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Quantum Backend Server running on port ${PORT}`);
 });
