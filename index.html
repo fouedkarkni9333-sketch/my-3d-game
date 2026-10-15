@@ -3,13 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المستقبل 6226 - الوعي السيبراني المطلق</title>
+    <title>لعبة المستقبل 6226 - رؤية سينمائية غير حاصبة</title>
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
-        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: #00ffff; font-size: 18px; font-weight: bold; text-shadow: 0 0 15px #00ffff, 2px 2px 4px black; z-index: 10; line-height: 1.3; display: none; }
-        #levelIndicator { font-size: 13px; color: #ff0055; text-shadow: 0 0 10px #ff0055; }
-        #rankDisplay { font-size: 14px; color: #ffd700; text-shadow: 0 0 12px #ffd700; font-weight: bold; }
-        #energyContainer { width: 180px; height: 10px; background: rgba(255,255,255,0.2); border: 2px solid #00ffff; border-radius: 5px; margin: 3px auto; overflow: hidden; box-shadow: 0 0 12px rgba(0,255,255,0.6); }
+        
+        /* لوحة النتائج مقسمة على الجانب الأيمن واليسار لحجب الرؤية عن المنتصف */
+        #scoreBoard { 
+            position: absolute; 
+            top: 15px; 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 0 25px; 
+            box-sizing: border-box; 
+            z-index: 10; 
+            pointer-events: none;
+        }
+        .side-panel {
+            background: rgba(5, 2, 20, 0.75);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 10px 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 15px rgba(0,255,255,0.2);
+            color: #00ffff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 8px #00ffff;
+            line-height: 1.4;
+        }
+        #levelIndicator { font-size: 12px; color: #ff0055; text-shadow: 0 0 8px #ff0055; }
+        #rankDisplay { font-size: 13px; color: #ffd700; text-shadow: 0 0 10px #ffd700; font-weight: bold; }
+        
+        #energyContainer { width: 140px; height: 8px; background: rgba(255,255,255,0.2); border: 1px solid #00ffff; border-radius: 4px; margin-top: 4px; overflow: hidden; box-shadow: 0 0 8px rgba(0,255,255,0.5); }
         #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055, #ffd700); transition: width 0.2s ease; }
         
         /* شاشة الهنجار الأبعادي لعام 6226 */
@@ -69,11 +95,16 @@
     <!-- إشعار الترقية الأسطوري -->
     <div id="achievementPopup"><span id="popupText">🏆 رتبة إلهية جديدة!</span></div>
 
+    <!-- لوحة النتائج مقسمة على الجانبين الأيمن والأيسر لمنع حجب الرؤية في المنتصف -->
     <div id="scoreBoard">
-        النقاط: <span id="scoreVal">0</span> | <span id="levelIndicator">المستوى 1: قطاع النيون</span><br>
-        الرتبة الكونية: <span id="rankDisplay">متدرب سبراني</span><br>
-        طاقة الوعي المطلق: <div id="energyContainer"><div id="energyBar"></div></div>
-        <span style="font-size: 13px; color: #ffd700;">أعلى نتيجة كونية: <span id="highScoreDisplay">0</span></span>
+        <div class="side-panel" style="text-align: right;">
+            النقاط: <span id="scoreVal">0</span><br>
+            <span id="levelIndicator">المستوى 1: قطاع النيون</span>
+        </div>
+        <div class="side-panel" style="text-align: left;">
+            الرتبة: <span id="rankDisplay">متدرب سبراني</span><br>
+            <span style="font-size: 11px; color: #ffd700;">أعلى نتيجة: <span id="highScoreDisplay">0</span></span>
+        </div>
     </div>
 
     <!-- شاشة الخسارة -->
@@ -494,7 +525,7 @@
         function startGame() {
             buildPlayerModel();
             document.getElementById('hangarScreen').style.display = 'none';
-            document.getElementById('scoreBoard').style.display = 'block';
+            document.getElementById('scoreBoard').style.display = 'flex';
             document.getElementById('gameControls').style.display = 'flex';
             resetGame();
         }
@@ -548,11 +579,20 @@
             let shieldStatus = hasShield ? " | 🛡️ درع مفعل" : "";
             let speedStatus = boostTimer > 0 ? " | ⚡ سرعة الزمكان القصوى!" : "";
             updateLevelSystem();
-            document.getElementById('scoreBoard').innerHTML = 
-                `النقاط: <span id="scoreVal">${score}</span>${warpStatus}${speedStatus}${shieldStatus} | <span id="levelIndicator">${document.getElementById('levelIndicator').innerText}</span><br>` +
-                `الرتبة الكونية: <span id="rankDisplay">${currentRank}</span><br>` +
-                `طاقة الوعي المطلق: <div id="energyContainer"><div id="energyBar" style="width: ${quantumEnergy}%;"></div></div>` +
-                `<span style="font-size: 13px; color: #ffd700;">أعلى نتيجة كونية: <span id="highScoreDisplay">${highScore}</span></span>`;
+            
+            // تحديث اللوحين الجانبين من دون حجب منتصف الشاشة
+            document.getElementById('scoreBoard').innerHTML = `
+                <div class="side-panel" style="text-align: right;">
+                    النقاط: <span id="scoreVal">${score}</span>${warpStatus}${speedStatus}${shieldStatus}<br>
+                    <span id="levelIndicator">${document.getElementById('levelIndicator').innerText}</span>
+                </div>
+                <div class="side-panel" style="text-align: left;">
+                    الرتبة: <span id="rankDisplay">${currentRank}</span><br>
+                    طاقة الوعي:
+                    <div id="energyContainer"><div id="energyBar" style="width: ${quantumEnergy}%;"></div></div>
+                    <span style="font-size: 11px; color: #ffd700;">أعلى نتيجة: <span id="highScoreDisplay">${highScore}</span></span>
+                </div>
+            `;
         }
 
         function resetGame() {
@@ -592,7 +632,6 @@
             if (!isGameOver) {
                 animationTime += 0.15;
 
-                // تفاعل الذكاء الاصطناعي مع الانحناء الأبعادي
                 if (currentLevel === 3) {
                     gravityAngle += 0.012;
                     scene.rotation.z = Math.sin(gravityAngle) * 0.07;
@@ -729,7 +768,6 @@
                             playSound('shield');
                         }
                         
-                        document.getElementById('energyBar').style.width = quantumEnergy + "%";
                         updateScoreDisplay();
 
                         item.position.z = -70;
