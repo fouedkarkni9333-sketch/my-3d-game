@@ -1,28 +1,35 @@
-// server.js - Real-time Multiplayer Socket.io Server for Cyber Horizon 6226
-const express = require('http');
-const app = require('express')();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
     cors: { origin: "*" }
 });
 
-const rooms = {};
+let rooms = {};
 
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+    console.log('A player connected:', socket.id);
 
-    // الانضمام إلى غرفة معينة
     socket.on('join_room', (data) => {
-        const { roomCode, playerName, vehicleType } = data;
+        let roomCode = data.roomCode || 'cyber6226';
+        let playerName = data.playerName || 'Player';
+        let vehicleType = data.vehicleType || 0;
+
         socket.join(roomCode);
         socket.roomCode = roomCode;
         socket.playerName = playerName;
 
         if (!rooms[roomCode]) {
-            rooms[roomCode] = {};
+            rooms[roomCode] = {
+                leader: socket.id,
+                players: {}
+            };
         }
 
-        rooms[roomCode][socket.id] = {
+        rooms[roomCode].players[socket.id] = {
             id: socket.id,
             name: playerName,
             vehicle: vehicleType,
@@ -30,46 +37,53 @@ io.on('connection', (socket) => {
             score: 0
         };
 
-        // إعلام الجميع في الغرفة بوجود لاعب جديد
-        io.to(roomCode).emit('update_players', rooms[roomCode]);
-        console.log(`Player ${playerName} joined room: ${roomCode}`);
+        io.to(roomCode).emit('update_party', rooms[roomCode]);
+        io.to(roomCode).emit('update_players', rooms[roomCode].players);
     });
 
-    // استقبال حركة اللاعب وبثها لباقي أصدقائه في الغرفة أونلاين
-    socket.on('player_move', (posData) => {
-        const room = socket.roomCode;
-        if (room && rooms[room] && rooms[room][socket.id]) {
-            rooms[room][socket.id].x = posData.x;
-            rooms[room][socket.id].y = posData.y;
-            rooms[room][socket.id].z = posData.z;
-            rooms[room][socket.id].score = posData.score;
+    socket.on('player_move', (data) => {
+        let roomCode = socket.roomCode;
+        if (roomCode && rooms[roomCode] && rooms[roomCode].players[socket.id]) {
+            rooms[roomCode].players[socket.id].x = data.x;
+            rooms[roomCode].players[socket.id].y = data.y;
+            rooms[roomCode].players[socket.id].z = data.z;
+            rooms[roomCode].players[socket.id].score = data.score;
 
-            // بث الإحداثيات للاعبين الآخرين في الغرفة فوراً
-            socket.to(room).emit('player_moved', {
+            socket.to(roomCode).emit('player_moved', {
                 id: socket.id,
-                x: posData.x,
-                y: posData.y,
-                z: posData.z,
-                score: posData.score
+                x: data.x,
+                y: data.y,
+                z: data.z
             });
         }
     });
 
-    // مغادرة اللعبة أو انقطاع الاتصال
+    socket.on('start_game_party', () => {
+        let roomCode = socket.roomCode;
+        if (roomCode && rooms[roomCode] && rooms[roomCode].leader === socket.id) {
+            io.to(roomCode).emit('launch_game_for_all');
+        }
+    });
+
     socket.on('disconnect', () => {
-        const room = socket.roomCode;
-        if (room && rooms[room]) {
-            delete rooms[room][socket.id];
-            io.to(room).emit('update_players', rooms[room]);
-            if (Object.keys(rooms[room]).length === 0) {
-                delete rooms[room];
+        let roomCode = socket.roomCode;
+        if (roomCode && rooms[roomCode]) {
+            delete rooms[roomCode].players[socket.id];
+            if (Object.keys(rooms[roomCode].players).length === 0) {
+                delete rooms[roomCode];
+            } else {
+                if (rooms[roomCode].leader === socket.id) {
+                    rooms[roomCode].leader = Object.keys(rooms[roomCode].players)[0];
+                }
+                io.to(roomCode).emit('update_party', rooms[roomCode]);
+                io.to(roomCode).emit('update_players', rooms[roomCode].players);
             }
         }
-        console.log('User disconnected:', socket.id);
+        console.log('A player disconnected:', socket.id);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Cyber Horizon Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
