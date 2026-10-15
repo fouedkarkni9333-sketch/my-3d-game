@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة المكعب ثلاثية الأبعاد - جاذبية وحركات متطورة</title>
+    <title>لعبة الواقع الافتراضي ثلاثية الأبعاد</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; }
         #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: white; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px black; z-index: 10; line-height: 1.5; }
-        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; }
+        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; }
         #gameOverScreen h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px black; }
         #restartBtn { padding: 12px 30px; font-size: 20px; font-weight: bold; background: #ff4500; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); margin-top: 15px; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; direction: ltr; }
-        .btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.4); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; }
-        .btn:active { background: rgba(255, 255, 255, 0.8); color: black; }
+        .btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.3); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; backdrop-filter: blur(5px); }
+        .btn:active { background: rgba(255, 255, 255, 0.7); color: black; }
     </style>
 </head>
 <body>
@@ -93,45 +93,62 @@
         }
 
         const scene = new THREE.Scene();
-        let skyColors = [0x87CEEB, 0xFF7F50, 0x2c3e50, 0x4b0082]; 
-        let currentSkyIndex = 0;
-        scene.background = new THREE.Color(skyColors[0]);
+        let skyColor = 0x87CEEB;
+        scene.background = new THREE.Color(skyColor);
+        // إضافة ضباب واقعي في الأفق لإعطاء عمق للمشهد
+        scene.fog = new THREE.FogExp2(skyColor, 0.015);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // تفعيل الظلال الواقعية
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // إضاءة
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(5, 10, 7);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x606060));
+        // --- إضاءة واقعية متقدمة ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
 
-        // الأرضية
-        const geometry = new THREE.BoxGeometry(6, 0.5, 60);
-        const material = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
-        const platform = new THREE.Mesh(geometry, material);
-        platform.position.set(0, -1, -20);
+        const sunLight = new THREE.DirectionalLight(0xfffaf0, 1.2);
+        sunLight.position.set(10, 20, 10);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 50;
+        sunLight.shadow.camera.left = -10;
+        sunLight.shadow.camera.right = 10;
+        sunLight.shadow.camera.top = 10;
+        sunLight.shadow.camera.bottom = -10;
+        scene.add(sunLight);
+
+        // --- الأرضية الواقعية (ممر إسفلتي/طبيعي مع جانب عشبية) ---
+        const groundGeo = new THREE.BoxGeometry(6, 0.5, 100);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 }); // لون إسفلتي واقعي
+        const platform = new THREE.Mesh(groundGeo, groundMat);
+        platform.position.set(0, -1, -30);
+        platform.receiveShadow = true;
         scene.add(platform);
 
-        // تصميم اللاعب المحسّن (روبوت متفاعل)
+        // --- تصميم الشخصية (روبوت بتفاصيل وظلال واقعية) ---
         const player = new THREE.Group();
 
         const bodyGeo = new THREE.BoxGeometry(0.6, 0.7, 0.4);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3498db, metalness: 0.3, roughness: 0.4 });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2980b9, metalness: 0.5, roughness: 0.3 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.y = 0.35;
+        bodyMesh.castShadow = true;
         player.add(bodyMesh);
 
         const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.4);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.2 });
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.3, roughness: 0.2 });
         const headMesh = new THREE.Mesh(headGeo, headMat);
         headMesh.position.y = 0.85;
+        headMesh.castShadow = true;
         player.add(headMesh);
 
         const eyeGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, emissive: 0xff0000 });
         
         const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
         leftEye.position.set(-0.12, 0.88, 0.21);
@@ -144,13 +161,13 @@
         player.position.set(0, 0, 0);
         scene.add(player);
 
-        camera.position.set(0, 2.5, 5);
+        camera.position.set(0, 2.2, 4.5);
         camera.lookAt(player.position);
 
         let moveLeft = false, moveRight = false;
         let playerVelocityY = 0;
         let isGrounded = true;
-        const gravity = -0.018; // جاذبية أسرع وأكثر حماساً
+        const gravity = -0.018;
         
         let score = 0;
         let baseGameSpeed = 0.12;
@@ -162,20 +179,21 @@
         let highScore = localStorage.getItem('threeGameHighScore') || 0;
         document.getElementById('highScoreDisplay').innerText = highScore;
 
-        // العوائق المتنوعة
+        // --- العوائق الواقعية والمتنوعة ---
         let obstacles = [];
         const obsGeos = [
             new THREE.BoxGeometry(1, 1, 1),           
-            new THREE.SphereGeometry(0.6, 8, 8),     
-            new THREE.ConeGeometry(0.6, 1.2, 4)      
+            new THREE.SphereGeometry(0.6, 16, 16),     
+            new THREE.ConeGeometry(0.6, 1.2, 6)      
         ];
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0x8B0000, roughness: 0.2 });
+        const obsMat = new THREE.MeshStandardMaterial({ color: 0xc0392b, metalness: 0.4, roughness: 0.3 });
 
         function spawnObstacle(zPos) {
             const randomGeo = obsGeos[Math.floor(Math.random() * obsGeos.length)];
             const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
             obstacle.position.set(randomX, 0, zPos);
+            obstacle.castShadow = true;
             scene.add(obstacle);
             obstacles.push(obstacle);
         }
@@ -184,13 +202,13 @@
         spawnObstacle(-45);
         spawnObstacle(-65);
 
-        // العناصر المساعدة
+        // --- العناصر المساعدة براقة وواقعية ---
         let collectibles = [];
         const starGeo = new THREE.OctahedronGeometry(0.4);
-        const starMat = new THREE.MeshBasicMaterial({ color: 0xffd700 }); 
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.8, roughness: 0.1, emissive: 0x332200 }); 
 
-        const boostGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 8);
-        const boostMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); 
+        const boostGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 12);
+        const boostMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.5, roughness: 0.1, emissive: 0x004444 }); 
 
         function spawnCollectible(zPos) {
             const isBoost = Math.random() > 0.7; 
@@ -198,6 +216,7 @@
             item.userData = { type: isBoost ? 'boost' : 'star' };
             const randomX = (Math.random() - 0.5) * 3;
             item.position.set(randomX, 0.5, zPos);
+            item.castShadow = true;
             scene.add(item);
             collectibles.push(item);
         }
@@ -218,7 +237,7 @@
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
             if (isGrounded && !isGameOver) {
-                playerVelocityY = 0.32; // قفزة أعلى وأكثر نشاطاً
+                playerVelocityY = 0.32;
                 isGrounded = false;
                 playSound('jump');
             }
@@ -236,8 +255,6 @@
             baseGameSpeed = 0.12;
             gameSpeed = baseGameSpeed;
             boostTimer = 0;
-            currentSkyIndex = 0;
-            scene.background.setHex(skyColors[0]);
             player.position.set(0, 0, 0);
             player.rotation.z = 0;
             
@@ -258,7 +275,6 @@
             if (!isGameOver) {
                 animationTime += 0.15;
 
-                // إدارة السرعة المؤقتة
                 if (boostTimer > 0) {
                     boostTimer--;
                     gameSpeed = baseGameSpeed * 1.8;
@@ -268,7 +284,6 @@
                     }
                 }
 
-                // نظام الحركة الجانبية مع الميلان الديناميكي
                 if (moveLeft && player.position.x > -2.2) {
                     player.position.x -= 0.09;
                     if (player.rotation.z < 0.3) player.rotation.z += 0.05;
@@ -276,15 +291,12 @@
                     player.position.x += 0.09;
                     if (player.rotation.z > -0.3) player.rotation.z -= 0.05;
                 } else {
-                    // إعادة ضبط الميلان بسلاسة عند التوقف
                     player.rotation.z *= 0.8;
                 }
 
-                // تطبيق نظام الجاذبية والحركات التفاعلية
                 player.position.y += playerVelocityY;
                 if (!isGrounded) {
                     playerVelocityY += gravity;
-                    // حركة دوران خفيفة أثناء القفز
                     player.rotation.x += 0.04;
                     if (player.position.y <= 0) {
                         player.position.y = 0;
@@ -293,12 +305,10 @@
                         player.rotation.x = 0;
                     }
                 } else {
-                    // حركة اهتزاز وتأرجح خفيفة أثناء الجري على الأرض
                     bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2) * 0.05;
                     headMesh.position.y = 0.85 + Math.cos(animationTime * 2) * 0.03;
                 }
 
-                // تحريك وإدارة العوائق
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
                     obs.position.z += gameSpeed;
@@ -312,15 +322,8 @@
                         baseGameSpeed += 0.001;
                         if (boostTimer === 0) gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
-
-                        let newSkyIndex = Math.floor(score / 40) % skyColors.length;
-                        if (newSkyIndex !== currentSkyIndex) {
-                            currentSkyIndex = newSkyIndex;
-                            scene.background.setHex(skyColors[currentSkyIndex]);
-                        }
                     }
 
-                    // فحص الاصطدام مع العوائق
                     if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
                         Math.abs(player.position.x - obs.position.x) < 0.8 &&
                         player.position.y < 0.6) {
@@ -341,7 +344,6 @@
                     }
                 }
 
-                // تحريك وإدارة العناصر المساعدة
                 for (let j = 0; j < collectibles.length; j++) {
                     let item = collectibles[j];
                     item.position.z += gameSpeed;
@@ -353,7 +355,6 @@
                         item.position.x = (Math.random() - 0.5) * 3;
                     }
 
-                    // فحص جمع العنصر
                     if (Math.abs(player.position.z - item.position.z) < 0.8 &&
                         Math.abs(player.position.x - item.position.x) < 0.8 &&
                         player.position.y < 1.0) {
