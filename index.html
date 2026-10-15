@@ -283,6 +283,12 @@
         }
 
         function requestStartGame() {
+            // تفعيل نظام الصوت مباشرة عند ضغط الزر لتجاوز الحظر الأمني لمتصفحات الجوال
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             if (currentGameMode === 'squad' || currentGameMode === 'duo') {
                 if (socket && isPartyLeader) {
                     socket.emit('start_game_party');
@@ -448,6 +454,9 @@
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
         }
 
@@ -1028,7 +1037,7 @@
         let lastTime = 0;
         const fixedTimeStep = 1 / 60;
         let accumulator = 0;
-        let maxSubSteps = 5; // حماية ضد التجمد من خلال وضع حد أقصى لعدد الحلقات في الإطار الواحد
+        let maxSubSteps = 5;
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
@@ -1037,7 +1046,6 @@
             let deltaTime = (currentTime - lastTime) / 1000;
             lastTime = currentTime;
             
-            // تحديد أقصى مدة للفرق الزمني لمنع التراكم الهائل عند انخفاض الأداء أو التبديل بين التبويبات
             if (deltaTime > 0.1) deltaTime = 0.1;
 
             accumulator += deltaTime;
@@ -1209,7 +1217,6 @@
                     subSteps++;
                 }
 
-                // إذا حدث تراكم كبير وتم تجاوز الحد الأقصى، يتم تفريغ الaccumulator لتفادي التجميد الكلي
                 if (accumulator >= fixedTimeStep) {
                     accumulator = 0;
                 }
