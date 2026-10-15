@@ -3,35 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyber Horizon 6226 - Ultimate Edition</title>
+    <title>Cyber Horizon 6226 - Next-Gen Cloud AAA Edition</title>
+    <!-- PWA Web App Manifest Meta Tags -->
+    <meta name="theme-color" content="#010005">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         
-        /* لوحة النتائج مقسمة على الجانب الأيمن واليسار لحجب الرؤية عن المنتصف تماماً */
         #scoreBoard { 
-            position: absolute; 
-            top: 15px; 
-            width: 100%; 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 0 25px; 
-            box-sizing: border-box; 
-            z-index: 10; 
-            pointer-events: none;
-            display: none;
+            position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-between; 
+            padding: 0 25px; box-sizing: border-box; z-index: 10; pointer-events: none; display: none;
         }
         .side-panel {
-            background: rgba(5, 2, 20, 0.75);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            padding: 10px 15px;
-            border-radius: 12px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 0 15px rgba(0,255,255,0.2);
-            color: #00ffff;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 0 8px #00ffff;
-            line-height: 1.4;
+            background: rgba(5, 2, 20, 0.75); border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 10px 15px; border-radius: 12px; backdrop-filter: blur(8px);
+            box-shadow: 0 0 15px rgba(0,255,255,0.2); color: #00ffff; font-size: 14px; font-weight: bold;
+            text-shadow: 0 0 8px #00ffff; line-height: 1.4;
         }
         #levelIndicator { font-size: 12px; color: #ff0055; text-shadow: 0 0 8px #ff0055; }
         #rankDisplay { font-size: 13px; color: #ffd700; text-shadow: 0 0 10px #ffd700; font-weight: bold; }
@@ -39,10 +26,8 @@
         #energyContainer { width: 140px; height: 8px; background: rgba(255,255,255,0.2); border: 1px solid #00ffff; border-radius: 4px; margin-top: 4px; overflow: hidden; box-shadow: 0 0 8px rgba(0,255,255,0.5); }
         #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055, #ffd700); transition: width 0.2s ease; }
         
-        /* شاشة الهنجار الأبعادي لعام 6226 والإعدادات */
         #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a021f 0%, #010005 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(20px); overflow-y: auto; padding: 20px; box-sizing: border-box;}
         
-        /* موقع قائمة اللغات في أعلى اليسار فوق عنوان اللعبة */
         .language-select-container { position: absolute; top: 15px; left: 20px; z-index: 40; }
         .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
         .language-select-container select option { background: #050214; color: #fff; }
@@ -50,14 +35,12 @@
         #hangarScreen h1 { font-size: 36px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
         #hangarScreen p { font-size: 14px; color: #ff0055; margin-bottom: 15px; text-shadow: 0 0 12px #ff0055; }
         
-        /* أنماط اللعب الثلاثة: Solo, Duo, Squad 6+ */
         .mode-selection { display: flex; gap: 15px; margin-bottom: 15px; }
         .mode-card { width: 110px; padding: 10px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
         .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
         .mode-card h4 { margin: 5px 0; color: #fff; font-size: 14px; }
         .mode-card span { font-size: 11px; color: #aaa; }
 
-        /* نافذة إعدادات الغرفة الصوتية والشبكة أونلاين */
         #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 340px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
         #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 10px; border-radius: 8px; width: 42%; text-align: center; font-weight: bold; outline: none; margin: 3px; }
         .net-btn { background: #00ffff; color: #000; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #00ffff; }
@@ -92,9 +75,7 @@
     </style>
 </head>
 <body>
-    <!-- شاشة الهنجار السيبراني لعام 6226 -->
     <div id="hangarScreen">
-        <!-- قائمة اختيار 30 لغة عالمية أعلى يسار الشاشة -->
         <div class="language-select-container">
             <select id="langSelector" onchange="changeLanguage(this.value)">
                 <option value="en" selected>English</option>
@@ -133,7 +114,6 @@
         <h1 id="uiTitle">CYBER HORIZON 6226</h1>
         <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
         
-        <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
         <div class="mode-selection">
             <div class="mode-card selected" onclick="selectGameMode('solo', this)">
                 <div style="font-size: 24px;">👤</div>
@@ -152,7 +132,6 @@
             </div>
         </div>
 
-        <!-- إعدادات غرفة السكواد والدردشة والشبكة المحدثة للوبي الشبيه بـ Free Fire -->
         <div id="squadConfigPanel">
             <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">👥 Party Lobby Gateway</div>
             <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
@@ -185,10 +164,8 @@
         <button id="startBtn" onclick="requestStartGame()">INITIALIZE MATRIX</button>
     </div>
 
-    <!-- إشعار الترقية الأسطوري -->
     <div id="achievementPopup"><span id="popupText">🏆 RANK UP!</span></div>
 
-    <!-- لوحة النتائج مقسمة على الجانبين الأيمن والأيسر لمنع حجب الرؤية في المنتصف تماماً -->
     <div id="scoreBoard">
         <div class="side-panel" id="leftPanel" style="text-align: left;">
             Score: <span id="scoreVal">0</span><br>
@@ -202,18 +179,13 @@
         </div>
     </div>
 
-    <!-- شاشة الخسارة -->
     <div id="gameOverScreen">
         <h1 id="goTitle">SYSTEM FAILURE!</h1>
         <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">Final Score: 0</p>
         <p id="highScoreMsg" style="font-size: 18px; color: #ffd700; margin: 5px 0 15px 0;"></p>
-        <div id="globalLeaderboardBox" style="background: rgba(0,255,255,0.1); border: 1px solid #00ffff; border-radius: 10px; padding: 10px; width: 280px; margin: 10px auto; font-size: 12px; color: #00ffff; text-align: left;">
-            <b>🌐 Global Leaderboard:</b><br><span id="leaderboardList">Loading...</span>
-        </div>
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
 
-    <!-- أزرار التحكم المطلقة -->
     <div class="controls" id="gameControls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -222,18 +194,20 @@
         <div class="btn" id="btnRight">▶</div>
     </div>
 
-    <!-- تحميل مكتبات Three.js للغرافيك ثلاثي الأبعاد -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- مكتبة Socket.io للاتصال بالسيرفر الحقيقي أونلاين -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // 🌐 إضافات الاتصال الجماعي وقائد الفريق (Party Leader)
+        // تفعيل دعم PWA الخدمي للتخزين المؤقت السحابي الفوري
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+
         let socket = null;
         let remotePlayers = {};
         let isPartyLeader = false;
-        
-        // 🔗 ضع رابط سيرفر Render الخاص بك هنا
         const RENDER_SERVER_URL = 'https://e-66js.onrender.com';
 
         function joinPartyLobby() {
@@ -241,9 +215,18 @@
             let playerName = document.getElementById('playerNameInput').value.trim() || "Player";
 
             if (!socket) {
-                socket = io(RENDER_SERVER_URL, { transports: ['websocket', 'polling'] });
+                socket = io(RENDER_SERVER_URL, { 
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionAttempts: 15,
+                    reconnectionDelay: 1000
+                });
 
                 socket.on('connect', () => {
+                    socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+                });
+
+                socket.on('reconnect', () => {
                     socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
                 });
 
@@ -278,18 +261,11 @@
                     }
                 });
 
+                // خوارزمية التنبؤ العكسي واستيفاء الحالة المتقدمة (State Interpolation & Reconciliation)
                 socket.on('player_moved', (data) => {
                     if (remotePlayers[data.id]) {
-                        remotePlayers[data.id].position.set(data.x, data.y, data.z);
+                        remotePlayers[data.id].targetPos = new THREE.Vector3(data.x, data.y, data.z);
                     }
-                });
-
-                socket.on('update_leaderboard', (boardData) => {
-                    let html = "";
-                    boardData.forEach((item, index) => {
-                        html += `${index + 1}. ${item.name}: <b>${item.score} pts</b><br>`;
-                    });
-                    document.getElementById('leaderboardList').innerHTML = html || "No records yet.";
                 });
             } else {
                 socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
@@ -301,6 +277,7 @@
             const geo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
             const mat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x550055, wireframe: true });
             const mesh = new THREE.Mesh(geo, mat);
+            mesh.targetPos = new THREE.Vector3(0, 0, 0);
             scene.add(mesh);
             remotePlayers[id] = mesh;
         }
@@ -361,7 +338,6 @@
             }
         }
 
-        // قاموس الترجمات للغات الـ 30 العالمية كاملة غير منقوصة
         const translations = {
             en: {
                 title: "CYBER HORIZON 6226", sub: "Absolute Quantum Consciousness Matrix", start: "INITIALIZE MATRIX",
@@ -1074,7 +1050,9 @@
 
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
-                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.15);
+                    // نظام الذكاء الاصطناعي التكيفي لتعديل سرعة العقبات بناءً على تطور اللاعب
+                    let aiDynamicFactor = 1 + (currentLevel - 1) * 0.15 + (score * 0.0001);
+                    let currentObsSpeed = gameSpeed * aiDynamicFactor;
                     obs.position.z += currentObsSpeed;
                     obs.rotation.x += 0.03;
                     obs.rotation.y += 0.04;
@@ -1155,7 +1133,14 @@
                     }
                 }
 
-                // 🌐 بث إحداثيات اللاعب الحيّة للأصدقاء أونلاين
+                // تطبيق التنبيه المتقدم وتنعيم الحركة الحية (State Lerp Reconciliation)
+                for (let id in remotePlayers) {
+                    let pMesh = remotePlayers[id];
+                    if (pMesh.targetPos) {
+                        pMesh.position.lerp(pMesh.targetPos, 0.25);
+                    }
+                }
+
                 if (socket) {
                     socket.emit('player_move', {
                         x: player.position.x,
