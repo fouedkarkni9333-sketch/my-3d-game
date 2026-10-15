@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة الواقع الافتراضي ثلاثية الأبعاد</title>
+    <title>لعبة المستقبل 2226 - Cyberpunk Runner</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Tahoma, sans-serif; user-select: none; }
-        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: white; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px black; z-index: 10; line-height: 1.5; }
-        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; }
-        #gameOverScreen h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px black; }
-        #restartBtn { padding: 12px 30px; font-size: 20px; font-weight: bold; background: #ff4500; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); margin-top: 15px; }
+        body { margin: 0; overflow: hidden; background: #0b031b; font-family: Tahoma, sans-serif; user-select: none; }
+        #scoreBoard { position: absolute; top: 15px; width: 100%; text-align: center; color: #00ffff; font-size: 22px; font-weight: bold; text-shadow: 0 0 10px #00ffff, 2px 2px 4px black; z-index: 10; line-height: 1.5; }
+        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 2, 15, 0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; backdrop-filter: blur(8px); }
+        #gameOverScreen h1 { font-size: 38px; margin-bottom: 10px; color: #ff0055; text-shadow: 0 0 15px #ff0055; }
+        #restartBtn { padding: 12px 35px; font-size: 20px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 20px rgba(0,255,255,0.5); margin-top: 15px; transition: 0.3s; }
+        #restartBtn:hover { transform: scale(1.05); }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 20px; direction: ltr; }
-        .btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.3); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; touch-action: manipulation; backdrop-filter: blur(5px); }
-        .btn:active { background: rgba(255, 255, 255, 0.7); color: black; }
+        .btn { width: 75px; height: 75px; background: rgba(0, 255, 255, 0.15); border: 2px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #00ffff; font-weight: bold; text-shadow: 0 0 10px #00ffff; touch-action: manipulation; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
+        .btn:active { background: rgba(0, 255, 255, 0.5); color: #000; box-shadow: 0 0 25px #00ffff; }
     </style>
 </head>
 <body>
     <div id="scoreBoard">
         النقاط: 0<br>
-        <span style="font-size: 16px; color: #ffd700;">أعلى نتيجة: <span id="highScoreDisplay">0</span></span>
+        <span style="font-size: 16px; color: #ff0055; text-shadow: 0 0 8px #ff0055;">سنة 2226 | أعلى نتيجة: <span id="highScoreDisplay">0</span></span>
     </div>
 
     <!-- شاشة الخسارة -->
     <div id="gameOverScreen">
-        <h1>لقد اصطدمت! 💥</h1>
-        <p id="finalScore" style="font-size: 18px; margin: 5px;">نقاطك: 0</p>
+        <h1>انقطاع النظام! ⚡</h1>
+        <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">نقاطك النهائية: 0</p>
         <p id="highScoreMsg" style="font-size: 18px; color: #ffd700; margin: 5px 0 15px 0;"></p>
-        <button id="restartBtn" onclick="resetGame()">إعادة المحاولة</button>
+        <button id="restartBtn" onclick="resetGame()">إعادة تشغيل النظام</button>
     </div>
 
     <!-- أزرار التحكم -->
@@ -38,7 +39,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // نظام توليد الأصوات التفاعلي (Web Audio API)
+        // نظام أصوات السايبربانك (Web Audio API)
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -59,32 +60,32 @@
 
             if (type === 'jump') {
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(450, now + 0.18);
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
                 gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                 osc.start(now);
-                osc.stop(now + 0.18);
+                osc.stop(now + 0.15);
             } else if (type === 'crash') {
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(120, now);
-                osc.frequency.linearRampToValueAtTime(30, now + 0.35);
-                gainNode.gain.setValueAtTime(0.5, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(20, now + 0.4);
+                gainNode.gain.setValueAtTime(0.6, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
                 osc.start(now);
-                osc.stop(now + 0.35);
+                osc.stop(now + 0.4);
             } else if (type === 'collect') {
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(350, now);
-                osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
                 gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.start(now);
-                osc.stop(now + 0.12);
+                osc.stop(now + 0.1);
             } else if (type === 'boost') {
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.linearRampToValueAtTime(660, now + 0.25);
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(900, now + 0.25);
                 gainNode.gain.setValueAtTime(0.4, now);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 osc.start(now);
@@ -93,70 +94,78 @@
         }
 
         const scene = new THREE.Scene();
-        let skyColor = 0x87CEEB;
-        scene.background = new THREE.Color(skyColor);
-        // إضافة ضباب واقعي في الأفق لإعطاء عمق للمشهد
-        scene.fog = new THREE.FogExp2(skyColor, 0.015);
+        let fogColor = 0x050212;
+        scene.background = new THREE.Color(fogColor);
+        scene.fog = new THREE.FogExp2(fogColor, 0.02); // ضباب مستقبلي داكن
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // تفعيل الظلال الواقعية
+        renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // --- إضاءة واقعية متقدمة ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // --- إضاءة مستقبلية (نيون) ---
+        const ambientLight = new THREE.AmbientLight(0x221144, 0.8);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfffaf0, 1.2);
-        sunLight.position.set(10, 20, 10);
+        const neonLight1 = new THREE.PointLight(0x00ffff, 2, 50);
+        neonLight1.position.set(0, 5, -10);
+        scene.add(neonLight1);
+
+        const sunLight = new THREE.DirectionalLight(0x9900ff, 1.5);
+        sunLight.position.set(5, 15, 5);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.near = 0.5;
-        sunLight.shadow.camera.far = 50;
-        sunLight.shadow.camera.left = -10;
-        sunLight.shadow.camera.right = 10;
-        sunLight.shadow.camera.top = 10;
-        sunLight.shadow.camera.bottom = -10;
         scene.add(sunLight);
 
-        // --- الأرضية الواقعية (ممر إسفلتي/طبيعي مع جانب عشبية) ---
-        const groundGeo = new THREE.BoxGeometry(6, 0.5, 100);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 }); // لون إسفلتي واقعي
+        // --- منصة طائرة مستقبلية ---
+        const groundGeo = new THREE.BoxGeometry(6, 0.6, 100);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111122, metalness: 0.9, roughness: 0.1 });
         const platform = new THREE.Mesh(groundGeo, groundMat);
         platform.position.set(0, -1, -30);
         platform.receiveShadow = true;
         scene.add(platform);
 
-        // --- تصميم الشخصية (روبوت بتفاصيل وظلال واقعية) ---
+        // خطوط نيون مضيئة على جوانب الأرضية
+        const lineGeo = new THREE.BoxGeometry(0.1, 0.7, 100);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        const leftLine = new THREE.Mesh(lineGeo, lineMat);
+        leftLine.position.set(-3, -0.9, -30);
+        scene.add(leftLine);
+        const rightLine = new THREE.Mesh(lineGeo, lineMat);
+        rightLine.position.set(3, -0.9, -30);
+        scene.add(rightLine);
+
+        // --- تصميم الشخصية (روبوت مستقبلي عالي التقنية) ---
         const player = new THREE.Group();
 
-        const bodyGeo = new THREE.BoxGeometry(0.6, 0.7, 0.4);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2980b9, metalness: 0.5, roughness: 0.3 });
+        const bodyGeo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.8, roughness: 0.2 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.y = 0.35;
         bodyMesh.castShadow = true;
         player.add(bodyMesh);
 
-        const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.4);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.3, roughness: 0.2 });
+        // صدر مضيء بطاقة النيون
+        const coreGeo = new THREE.BoxGeometry(0.3, 0.3, 0.45);
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+        coreMesh.position.set(0, 0.35, 0);
+        player.add(coreMesh);
+
+        const headGeo = new THREE.BoxGeometry(0.45, 0.4, 0.4);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0x222244, metalness: 0.9, roughness: 0.1 });
         const headMesh = new THREE.Mesh(headGeo, headMat);
         headMesh.position.y = 0.85;
         headMesh.castShadow = true;
         player.add(headMesh);
 
-        const eyeGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
-        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, emissive: 0xff0000 });
-        
-        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-        leftEye.position.set(-0.12, 0.88, 0.21);
-        player.add(leftEye);
-
-        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-        rightEye.position.set(0.12, 0.88, 0.21);
-        player.add(rightEye);
+        // عيون ليزرية متوهجة باللون الوردي المستقبلي
+        const eyeGeo = new THREE.BoxGeometry(0.35, 0.08, 0.05);
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+        const visor = new THREE.Mesh(eyeGeo, eyeMat);
+        visor.position.set(0, 0.88, 0.21);
+        player.add(visor);
 
         player.position.set(0, 0, 0);
         scene.add(player);
@@ -170,29 +179,29 @@
         const gravity = -0.018;
         
         let score = 0;
-        let baseGameSpeed = 0.12;
+        let baseGameSpeed = 0.13;
         let gameSpeed = baseGameSpeed;
         let isGameOver = false;
         let boostTimer = 0;
         let animationTime = 0;
 
-        let highScore = localStorage.getItem('threeGameHighScore') || 0;
+        let highScore = localStorage.getItem('futureGameHighScore') || 0;
         document.getElementById('highScoreDisplay').innerText = highScore;
 
-        // --- العوائق الواقعية والمتنوعة ---
+        // --- عوائق تكنولوجية مستقبلية ---
         let obstacles = [];
         const obsGeos = [
             new THREE.BoxGeometry(1, 1, 1),           
-            new THREE.SphereGeometry(0.6, 16, 16),     
-            new THREE.ConeGeometry(0.6, 1.2, 6)      
+            new THREE.TorusGeometry(0.5, 0.15, 16, 32),     
+            new THREE.OctahedronGeometry(0.7)      
         ];
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0xc0392b, metalness: 0.4, roughness: 0.3 });
+        const obsMat = new THREE.MeshStandardMaterial({ color: 0xff0055, metalness: 0.8, roughness: 0.2, emissive: 0x550022 });
 
         function spawnObstacle(zPos) {
             const randomGeo = obsGeos[Math.floor(Math.random() * obsGeos.length)];
             const obstacle = new THREE.Mesh(randomGeo, obsMat);
             const randomX = (Math.random() - 0.5) * 3; 
-            obstacle.position.set(randomX, 0, zPos);
+            obstacle.position.set(randomX, 0.3, zPos);
             obstacle.castShadow = true;
             scene.add(obstacle);
             obstacles.push(obstacle);
@@ -202,20 +211,20 @@
         spawnObstacle(-45);
         spawnObstacle(-65);
 
-        // --- العناصر المساعدة براقة وواقعية ---
+        // --- عناصر طاقة مستقبلية (Data Crystals & Quantum Boost) ---
         let collectibles = [];
-        const starGeo = new THREE.OctahedronGeometry(0.4);
-        const starMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.8, roughness: 0.1, emissive: 0x332200 }); 
+        const crystalGeo = new THREE.OctahedronGeometry(0.4);
+        const crystalMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.9, roughness: 0.1, emissive: 0x004444 }); 
 
-        const boostGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 12);
-        const boostMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.5, roughness: 0.1, emissive: 0x004444 }); 
+        const quantumGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const quantumMat = new THREE.MeshStandardMaterial({ color: 0xff00ff, metalness: 0.9, roughness: 0.1, emissive: 0x440044 }); 
 
         function spawnCollectible(zPos) {
             const isBoost = Math.random() > 0.7; 
-            const item = new THREE.Mesh(isBoost ? boostGeo : starGeo, isBoost ? boostMat : starMat);
+            const item = new THREE.Mesh(isBoost ? quantumGeo : crystalGeo, isBoost ? quantumMat : crystalMat);
             item.userData = { type: isBoost ? 'boost' : 'star' };
             const randomX = (Math.random() - 0.5) * 3;
-            item.position.set(randomX, 0.5, zPos);
+            item.position.set(randomX, 0.6, zPos);
             item.castShadow = true;
             scene.add(item);
             collectibles.push(item);
@@ -237,33 +246,33 @@
         setupBtn('btnRight', () => moveRight = true, () => moveRight = false);
         setupBtn('btnJump', () => {
             if (isGrounded && !isGameOver) {
-                playerVelocityY = 0.32;
+                playerVelocityY = 0.33;
                 isGrounded = false;
                 playSound('jump');
             }
         }, () => {});
 
         function updateScoreDisplay() {
-            let speedStatus = boostTimer > 0 ? " | ⚡ سرعة فائقة!" : "";
+            let speedStatus = boostTimer > 0 ? " | ⚡ تدفق الكم الفائق!" : "";
             document.getElementById('scoreBoard').innerHTML = 
-                `النقاط: ${score}${speedStatus}<br><span style="font-size: 16px; color: #ffd700;">أعلى نتيجة: ${highScore}</span>`;
+                `النقاط: ${score}${speedStatus}<br><span style="font-size: 16px; color: #ff0055; text-shadow: 0 0 8px #ff0055;">سنة 2226 | أعلى نتيجة: ${highScore}</span>`;
         }
 
         function resetGame() {
             isGameOver = false;
             score = 0;
-            baseGameSpeed = 0.12;
+            baseGameSpeed = 0.13;
             gameSpeed = baseGameSpeed;
             boostTimer = 0;
             player.position.set(0, 0, 0);
             player.rotation.z = 0;
             
-            obstacles[0].position.set(0, 0, -25);
-            obstacles[1].position.set(0, 0, -45);
-            obstacles[2].position.set(0, 0, -65);
+            obstacles[0].position.set(0, 0.3, -25);
+            obstacles[1].position.set(0, 0.3, -45);
+            obstacles[2].position.set(0, 0.3, -65);
 
-            collectibles[0].position.set(0, 0.5, -35);
-            collectibles[1].position.set(0, 0.5, -55);
+            collectibles[0].position.set(0, 0.6, -35);
+            collectibles[1].position.set(0, 0.6, -55);
 
             updateScoreDisplay();
             document.getElementById('gameOverScreen').style.display = 'none';
@@ -277,7 +286,7 @@
 
                 if (boostTimer > 0) {
                     boostTimer--;
-                    gameSpeed = baseGameSpeed * 1.8;
+                    gameSpeed = baseGameSpeed * 1.9;
                     if (boostTimer === 0) {
                         gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
@@ -297,7 +306,7 @@
                 player.position.y += playerVelocityY;
                 if (!isGrounded) {
                     playerVelocityY += gravity;
-                    player.rotation.x += 0.04;
+                    player.rotation.x += 0.05;
                     if (player.position.y <= 0) {
                         player.position.y = 0;
                         playerVelocityY = 0;
@@ -305,15 +314,15 @@
                         player.rotation.x = 0;
                     }
                 } else {
-                    bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2) * 0.05;
-                    headMesh.position.y = 0.85 + Math.cos(animationTime * 2) * 0.03;
+                    bodyMesh.position.y = 0.35 + Math.sin(animationTime * 2.5) * 0.05;
+                    headMesh.position.y = 0.85 + Math.cos(animationTime * 2.5) * 0.03;
                 }
 
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
                     obs.position.z += gameSpeed;
-                    obs.rotation.x += 0.02;
-                    obs.rotation.y += 0.03;
+                    obs.rotation.x += 0.03;
+                    obs.rotation.y += 0.04;
 
                     if (obs.position.z > 4) {
                         obs.position.z = -70;
@@ -326,19 +335,19 @@
 
                     if (Math.abs(player.position.z - obs.position.z) < 0.8 &&
                         Math.abs(player.position.x - obs.position.x) < 0.8 &&
-                        player.position.y < 0.6) {
+                        player.position.y < 0.7) {
                         isGameOver = true;
                         playSound('crash');
 
                         let isNewHighScore = false;
                         if (score > highScore) {
                             highScore = score;
-                            localStorage.setItem('threeGameHighScore', highScore);
+                            localStorage.setItem('futureGameHighScore', highScore);
                             isNewHighScore = true;
                         }
 
                         document.getElementById('finalScore').innerText = "نقاطك النهائية: " + score;
-                        document.getElementById('highScoreMsg').innerText = isNewHighScore ? "🎉 رقم قياسي جديد!" : "أعلى نتيجة: " + highScore;
+                        document.getElementById('highScoreMsg').innerText = isNewHighScore ? "🎉 رقم قياسي في سنة 2226!" : "أعلى نتيجة: " + highScore;
                         document.getElementById('gameOverScreen').style.display = 'flex';
                         document.getElementById('highScoreDisplay').innerText = highScore;
                     }
@@ -347,8 +356,8 @@
                 for (let j = 0; j < collectibles.length; j++) {
                     let item = collectibles[j];
                     item.position.z += gameSpeed;
-                    item.rotation.y += 0.07;
-                    item.rotation.z += 0.04;
+                    item.rotation.y += 0.08;
+                    item.rotation.z += 0.05;
 
                     if (item.position.z > 4) {
                         item.position.z = -60;
@@ -357,7 +366,7 @@
 
                     if (Math.abs(player.position.z - item.position.z) < 0.8 &&
                         Math.abs(player.position.x - item.position.x) < 0.8 &&
-                        player.position.y < 1.0) {
+                        player.position.y < 1.1) {
                         
                         if (item.userData.type === 'star') {
                             score += 15;
