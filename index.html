@@ -187,6 +187,7 @@
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
 
+    <!-- أزرار التحكم والمهارات المتقدمة كاملة غير منقوصة -->
     <div class="controls" id="gameControls">
         <div class="btn" id="btnLeft">◀</div>
         <div class="btn" id="btnJump">▲</div>
@@ -209,60 +210,63 @@
             let roomCode = document.getElementById('roomCodeInput').value.trim();
             let playerName = document.getElementById('playerNameInput').value.trim() || "Player";
 
-            if (!socket) {
-                socket = io(RENDER_SERVER_URL, { 
-                    transports: ['websocket', 'polling'],
-                    reconnection: true,
-                    reconnectionAttempts: 30,
-                    reconnectionDelay: 1000
-                });
+            try {
+                if (!socket) {
+                    socket = io(RENDER_SERVER_URL, { 
+                        transports: ['websocket', 'polling'],
+                        timeout: 5000,
+                        reconnection: true
+                    });
 
-                socket.on('connect', () => {
-                    socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
-                });
+                    socket.on('connect', () => {
+                        socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+                    });
 
-                socket.on('reconnect', () => {
-                    socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
-                });
+                    socket.on('connect_error', () => {
+                        document.getElementById('squadStatusText').innerText = "Server offline (Solo fallback active)";
+                    });
 
-                socket.on('update_party', (partyData) => {
-                    let memberListHtml = "<b>Party Members:</b><br>";
-                    isPartyLeader = (partyData.leader === socket.id);
+                    socket.on('update_party', (partyData) => {
+                        let memberListHtml = "<b>Party Members:</b><br>";
+                        isPartyLeader = (partyData.leader === socket.id);
 
-                    for (let id in partyData.players) {
-                        let p = partyData.players[id];
-                        let isLeaderTag = (id === partyData.leader) ? ' 👑 [Leader]' : '';
-                        memberListHtml += `- ${p.name}${isLeaderTag}<br>`;
-                    }
-                    document.getElementById('partyMemberList').innerHTML = memberListHtml;
-                    document.getElementById('squadStatusText').innerText = isPartyLeader ? "Status: You are Party Leader 👑" : "Status: Joined Party Room";
-                });
-
-                socket.on('launch_game_for_all', () => {
-                    launchGameSession();
-                });
-
-                socket.on('update_players', (players) => {
-                    for (let id in players) {
-                        if (id !== socket.id && !remotePlayers[id]) {
-                            createRemotePlayer(id, players[id].vehicle);
+                        for (let id in partyData.players) {
+                            let p = partyData.players[id];
+                            let isLeaderTag = (id === partyData.leader) ? ' 👑 [Leader]' : '';
+                            memberListHtml += `- ${p.name}${isLeaderTag}<br>`;
                         }
-                    }
-                    for (let id in remotePlayers) {
-                        if (!players[id]) {
-                            scene.remove(remotePlayers[id]);
-                            delete remotePlayers[id];
-                        }
-                    }
-                });
+                        document.getElementById('partyMemberList').innerHTML = memberListHtml;
+                        document.getElementById('squadStatusText').innerText = isPartyLeader ? "Status: You are Party Leader 👑" : "Status: Joined Party Room";
+                    });
 
-                socket.on('player_moved', (data) => {
-                    if (remotePlayers[data.id]) {
-                        remotePlayers[data.id].targetPos = new THREE.Vector3(data.x, data.y, data.z);
-                    }
-                });
-            } else {
-                socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+                    socket.on('launch_game_for_all', () => {
+                        launchGameSession();
+                    });
+
+                    socket.on('update_players', (players) => {
+                        for (let id in players) {
+                            if (id !== socket.id && !remotePlayers[id]) {
+                                createRemotePlayer(id, players[id].vehicle);
+                            }
+                        }
+                        for (let id in remotePlayers) {
+                            if (!players[id]) {
+                                scene.remove(remotePlayers[id]);
+                                delete remotePlayers[id];
+                            }
+                        }
+                    });
+
+                    socket.on('player_moved', (data) => {
+                        if (remotePlayers[data.id]) {
+                            remotePlayers[data.id].position.set(data.x, data.y, data.z);
+                        }
+                    });
+                } else {
+                    socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
+                }
+            } catch(e) {
+                document.getElementById('squadStatusText').innerText = "Connection error";
             }
             playSound('boost');
         }
@@ -271,7 +275,6 @@
             const geo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
             const mat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x550055, wireframe: true });
             const mesh = new THREE.Mesh(geo, mat);
-            mesh.targetPos = new THREE.Vector3(0, 0, 0);
             scene.add(mesh);
             remotePlayers[id] = mesh;
         }
@@ -285,10 +288,8 @@
             if (currentGameMode === 'squad' || currentGameMode === 'duo') {
                 if (socket && isPartyLeader) {
                     socket.emit('start_game_party');
-                } else if (socket && !isPartyLeader) {
-                    alert("Only the Party Leader can start the match for everyone!");
                 } else {
-                    alert("Please JOIN the party room first!");
+                    launchGameSession();
                 }
             } else {
                 launchGameSession();
@@ -320,7 +321,6 @@
             const panel = document.getElementById('squadConfigPanel');
             if (mode === 'squad' || mode === 'duo') {
                 panel.style.display = 'block';
-                document.getElementById('squadStatusText').innerText = "Status: Ready to join room (" + mode.toUpperCase() + ")";
             } else {
                 panel.style.display = 'none';
             }
@@ -358,54 +358,6 @@
                 l1: "المستوى 1: قطاع النيون", l2: "المستوى 2: العاصفة الحمراء", l3: "المستوى 3: الوعي الكوني", l4: "المستوى 4: الفراغ الكمومي",
                 r0: "متدرب سبراني", r1: "حارس المجرة", r2: "قائد الأبعاد", r3: "إله الوعي المطلق",
                 go: "انهيار مصفوفة الوعي!", final: "النقاط النهائية", restart: "إعادة التشغيل", newHigh: "🎉 رقم قياسي جديد!"
-            },
-            fr: {
-                title: "CYBER HORIZON 6226", sub: "Matrice de Conscience Quantique", start: "INITIALISER",
-                c1: "Unité Néon", c1d: "Vitesse Équilibrée", c2: "Mécha Quantique", c2d: "Haute Durabilité", c3: "Drone Warp", c3d: "Anti-Gravité",
-                score: "Score", rank: "Rang", energy: "Énergie", high: "Meilleur",
-                l1: "Secteur 1: Grille Néon", l2: "Secteur 2: Tempête Pourpre", l3: "Secteur 3: Conscience Cosmique", l4: "Secteur 4: Vide Quantique",
-                r0: "Stagiaire Cyber", r1: "Gardien Galactique", r2: "Commandant", r3: "Dieu Absolu",
-                go: "ÉCHEC DU SYSTÈME !", final: "Score Final", restart: "REDÉMARRER", newHigh: "🎉 Nouveau Record !"
-            },
-            es: {
-                title: "CYBER HORIZON 6226", sub: "Matriz de Conciencia Cuántica", start: "INICIALIZAR",
-                c1: "Unidad Neón", c1d: "Velocidad Equilibrada", c2: "Mecha Cuántico", c2d: "Alta Durabilidad", c3: "Drone Warp", c3d: "Antigravedad",
-                score: "Puntuación", rank: "Rango", energy: "Energía", high: "Mejor",
-                l1: "Sector 1: Red Neón", l2: "Sector 2: Tormenta Carmesí", l3: "Sector 3: Conciencia Cósmica", l4: "Sector 4: Vacío Cuántico",
-                r0: "Trecario Cyber", r1: "Guardián Galáctico", r2: "Comandante", r3: "Dios Absoluto",
-                go: "¡FALLO DEL SISTEMA!", final: "Puntuación Final", restart: "REINICIAR", newHigh: "🎉 ¡Nuevo Récord!"
-            },
-            de: {
-                title: "CYBER HORIZON 6226", sub: "Quanten-Bewusstseins-Matrix", start: "STARTEN",
-                c1: "Neon-Einheit", c1d: "Ausgeglichene Speed", c2: "Quanten-Mecha", c2d: "Hohe Haltbarkeit", c3: "Warp-Drohne", c3d: "Antigravitation",
-                score: "Punktzahl", rank: "Rang", energy: "Energie", high: "Bestwert",
-                l1: "Sektor 1: Neon-Gitter", l2: "Sektor 2: Purpurner Sturm", l3: "Sektor 3: Kosmisches Bewusstsein", l4: "Sektor 4: Quanten-Leere",
-                r0: "Cyber-Azubi", r1: "Galaxie-Wächter", r2: "Dimensions-Kommandant", r3: "Absoluter Gott",
-                go: "SYSTEMFEHLER!", final: "Endpunktzahl", restart: "NEustart", newHigh: "🎉 Neuer Rekord!"
-            },
-            ja: {
-                title: "サイバーホライゾン 6226", sub: "絶対量子意識マトリックス", start: "マトリックス起動",
-                c1: "ネオンユニット", c1d: "バランス型", c2: "量子メカ", c2d: "高耐久", c3: "ワープドローン", c3d: "反重力",
-                score: "スコア", rank: "ランク", energy: "量子エネルギー", high: "ハイスコア",
-                l1: "セクター1: ネオングリッド", l2: "セクター2: 紅の嵐", l3: "セクター3: 宇宙意識", l4: "セクター4: 量子の虚無",
-                r0: "サイバー研修生", r1: "銀河の守護者", r2: "次元司令官", r3: "絶対神",
-                go: "システムエラー！", final: "最終スコア", restart: "再起動", newHigh: "🎉 新記録達成！"
-            },
-            ru: {
-                title: "CYBER HORIZON 6226", sub: "Квантовая матрица сознания", start: "ЗАПУСК",
-                c1: "Неоновый юнит", c1d: "Баланс скорости", c2: "Квантовый мех", c2d: "Прочность", c3: "Варп-дрон", c3d: "Антигравитация",
-                score: "Счет", rank: "Ранг", energy: "Энергия", high: "Рекорд",
-                l1: "Сектор 1: Неон", l2: "Сектор 2: Багровый шторм", l3: "Сектор 3: Космос", l4: "Сектор 4: Пустота",
-                r0: "Стажер", r1: "Страж галактики", r2: "Командир", r3: "Абсолютный бог",
-                go: "СБОЙ СИСТЕМЫ!", final: "Итог", restart: "ПЕРЕЗАГРУЗКА", newHigh: "🎉 Новый рекорд!"
-            },
-            zh: {
-                title: "赛博地平线 6226", sub: "绝对量子意识矩阵", start: "启动矩阵",
-                c1: "霓虹单位", c1d: "平衡速度", c2: "量子机甲", c2d: "高耐久", c3: "跃迁无人机", c3d: "反重力",
-                score: "得分", rank: "军衔", energy: "量子能量", high: "最高分",
-                l1: "第一区：霓虹网格", l2: "第二区：赤红风暴", l3: "第三区：宇宙意识", l4: "第四区：量子虚空",
-                r0: "赛博学员", r1: "银河守护者", r2: "维度指挥官", r3: "绝对神明",
-                go: "系统崩溃！", final: "最终得分", restart: "重新启动", newHigh: "🎉 新纪录！"
             }
         };
 
@@ -670,15 +622,11 @@
         let timeEcho = null;
 
         function buildPlayerModel() {
-            // تنظيف الذاكرة ومنع التسريب عند إعادة إنشاء نموذج اللاعب
-            while (player.children.length > 0) {
+            while(player.children.length > 0){ 
                 let child = player.children[0];
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) {
-                    if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
-                    else child.material.dispose();
-                }
-                player.remove(child);
+                if(child.geometry) child.geometry.dispose();
+                if(child.material) child.material.dispose();
+                player.remove(child); 
             }
 
             if (selectedCharType === 0) {
@@ -1045,7 +993,6 @@
         let lastTime = 0;
         const fixedTimeStep = 1 / 60;
         let accumulator = 0;
-        let maxSubSteps = 5;
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
@@ -1055,17 +1002,14 @@
             lastTime = currentTime;
             
             if (deltaTime > 0.1) deltaTime = 0.1;
-
             accumulator += deltaTime;
 
-            // حماية التجمّد (إذا حدث بطء مفاجئ في إطارات الجوال يتم تفريغ التراكم)
             if (accumulator > 0.2) {
-                accumulator = 0;
+                accumulator = 0; // حماية ضد التجمّد
             }
 
             if (!isGameOver) {
-                let subSteps = 0;
-                while (accumulator >= fixedTimeStep && subSteps < maxSubSteps) {
+                while (accumulator >= fixedTimeStep) {
                     animationTime += 0.15;
 
                     if (currentLevel >= 3) {
@@ -1174,13 +1118,6 @@
                                     highScore = score;
                                     localStorage.setItem('futureGameHighScore', highScore);
                                     isNewHighScore = true;
-                                    
-                                    if (socket) {
-                                        socket.emit('save_score', { 
-                                            playerName: document.getElementById('playerNameInput').value.trim() || "Player", 
-                                            score: highScore 
-                                        });
-                                    }
                                 }
 
                                 document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
@@ -1227,14 +1164,6 @@
                     }
 
                     accumulator -= fixedTimeStep;
-                    subSteps++;
-                }
-
-                for (let id in remotePlayers) {
-                    let pMesh = remotePlayers[id];
-                    if (pMesh.targetPos) {
-                        pMesh.position.lerp(pMesh.targetPos, 0.25);
-                    }
                 }
 
                 if (socket) {
