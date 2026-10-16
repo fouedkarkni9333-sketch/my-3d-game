@@ -287,8 +287,14 @@
         <div class="btn" id="btnRight">▶</div>
     </div>
 
-    <!-- تحميل مكتبات Three.js و Cannon.js للفيزياء والرسومات -->
+    <!-- تحميل مكتبات Three.js، Cannon.js، ومكتبات Post-Processing الحديثة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -731,7 +737,6 @@
         scene.background = new THREE.Color(fogColor);
         scene.fog = new THREE.FogExp2(fogColor, 0.017);
 
-        // إعداد محرك الفيزياء الحقيقي Cannon.js
         const physicsWorld = new CANNON.World();
         physicsWorld.gravity.set(0, -9.82, 0);
 
@@ -740,6 +745,17 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
+
+        // إعداد نظام الـ Post-Processing والـ Unreal Bloom Pass المتقدم
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+        bloomPass.threshold = 0.1;
+        bloomPass.strength = 1.8; // توهج نيون سيبراني خلّاب
+        bloomPass.radius = 0.5;
+
+        const composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
 
         const ambientLight = new THREE.AmbientLight(0x221144, 1.0);
         scene.add(ambientLight);
@@ -789,9 +805,8 @@
         platform.position.set(0, -1, -30);
         scene.add(platform);
 
-        // ربط الأرضية بمحرك الفيزياء الحقيقي
         const groundBody = new CANNON.Body({
-            mass: 0, // جسم ثابت
+            mass: 0,
             shape: new CANNON.Box(new CANNON.Vec3(3, 0.3, 60))
         });
         groundBody.position.set(0, -1, -30);
@@ -886,7 +901,6 @@
             hasShield = shopInventory.shield;
             player.add(shieldMesh);
 
-            // إنشاء جسم الفيزياء الخاص باللاعب داخل Cannon.js
             if (playerBody) physicsWorld.remove(playerBody);
             playerBody = new CANNON.Body({
                 mass: 1,
@@ -1167,7 +1181,7 @@
             requestAnimationFrame(animate);
 
             if (!isGameOver) {
-                physicsWorld.step(1 / 60); // محاكاة الفيزياء الحقيقية بدقة
+                physicsWorld.step(1 / 60);
 
                 animationTime += 0.15;
 
@@ -1344,7 +1358,8 @@
                 camera.position.x = player.position.x * 0.4;
             }
 
-            renderer.render(scene, camera);
+            // استخدام الـ Composer لمعالجة الرندرة مع تأثيرات الـ Bloom المتقدمة
+            composer.render();
         }
         animate();
 
@@ -1352,6 +1367,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
