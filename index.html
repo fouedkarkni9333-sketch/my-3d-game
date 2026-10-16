@@ -359,6 +359,17 @@
         let isPartyLeader = false;
         const RENDER_SERVER_URL = 'https://my-3d-game-66js.onrender.com';
 
+        function syncCloudScore(finalScore, coins) {
+            if (socket && socket.connected) {
+                socket.emit('sync_cloud_database', {
+                    playerName: document.getElementById('playerNameInput').value || "Player",
+                    score: finalScore,
+                    coins: coins,
+                    level: accountLevel
+                });
+            }
+        }
+
         function sendQuickEmote(emoji) {
             if (socket) {
                 socket.emit('send_emote', { emoji, name: document.getElementById('playerNameInput').value });
@@ -746,11 +757,10 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // إعداد نظام الـ Post-Processing والـ Unreal Bloom Pass المتقدم
         const renderScene = new THREE.RenderPass(scene, camera);
         const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
         bloomPass.threshold = 0.1;
-        bloomPass.strength = 1.8; // توهج نيون سيبراني خلّاب
+        bloomPass.strength = 1.8;
         bloomPass.radius = 0.5;
 
         const composer = new THREE.EffectComposer(renderer);
@@ -1299,6 +1309,9 @@
                                 isNewHighScore = true;
                             }
 
+                            // مزامنة النقاط والبيانات مع السيرفر السحابي وقاعدة البيانات
+                            syncCloudScore(score, playerCoins);
+
                             document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
                             document.getElementById('earnedCoinsMsg').innerText = `💎 Earned +${earnedCoins} Q-Coins!`;
                             document.getElementById('highScoreMsg').innerText = isNewHighScore ? (t.newHigh || "🎉 New Quantum Record!") : ((t.high || "High Score") + ": " + highScore);
@@ -1358,7 +1371,6 @@
                 camera.position.x = player.position.x * 0.4;
             }
 
-            // استخدام الـ Composer لمعالجة الرندرة مع تأثيرات الـ Bloom المتقدمة
             composer.render();
         }
         animate();
