@@ -44,14 +44,16 @@
         .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
         .language-select-container select option { background: #050214; color: #fff; }
 
-        #hangarScreen h1 { font-size: 32px; margin-bottom: 2px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
+        #hangarScreen h1 { font-size: 32px; margin-bottom: 2px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; animation: glowPulse 2s infinite alternate; }
+        @keyframes glowPulse { from { text-shadow: 0 0 20px #00ffff; } to { text-shadow: 0 0 40px #ff0055, 0 0 60px #ffd700; } }
+
         #hangarScreen p { font-size: 13px; color: #ff0055; margin-bottom: 10px; text-shadow: 0 0 12px #ff0055; }
         
         #playerStatsBar { background: rgba(0,255,255,0.1); border: 1px solid rgba(0,255,255,0.4); padding: 6px 20px; border-radius: 20px; margin-bottom: 10px; font-size: 13px; color: #ffd700; box-shadow: 0 0 10px rgba(0,255,255,0.2); display: flex; gap: 15px; align-items: center; }
 
         .mode-selection { display: flex; gap: 12px; margin-bottom: 10px; }
         .mode-card { width: 100px; padding: 8px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
+        .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 25px #ffd700; transform: scale(1.08); }
         .mode-card h4 { margin: 3px 0; color: #fff; font-size: 13px; }
         .mode-card span { font-size: 10px; color: #aaa; }
 
@@ -64,13 +66,14 @@
 
         .character-options { display: flex; gap: 12px; margin-bottom: 12px; }
         .char-card { width: 110px; padding: 10px; background: rgba(255,255,255,0.04); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(0,255,255,0.1); }
-        .char-card:hover, .char-card.selected { border-color: #00ffff; background: rgba(0,255,255,0.2); box-shadow: 0 0 30px #00ffff; transform: scale(1.08); }
+        .char-card:hover, .char-card.selected { border-color: #00ffff; background: rgba(0,255,255,0.2); box-shadow: 0 0 35px #00ffff; transform: scale(1.1); }
         .char-card h3 { font-size: 14px; margin: 6px 0 2px 0; color: #fff; }
         .char-card span { font-size: 10px; color: #aaa; }
         
         .action-buttons { display: flex; gap: 10px; justify-content: center; }
-        #startBtn { padding: 10px 25px; font-size: 17px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055, #ffd700); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 35px rgba(0,255,255,0.9); transition: 0.3s; }
-        #startBtn:hover { transform: scale(1.08); box-shadow: 0 0 50px #00ffff; }
+        #startBtn { padding: 10px 25px; font-size: 17px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055, #ffd700); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 35px rgba(0,255,255,0.9); transition: 0.3s; animation: btnPulse 1.5s infinite alternate; }
+        @keyframes btnPulse { from { box-shadow: 0 0 20px #00ffff; } to { box-shadow: 0 0 45px #ff0055, 0 0 20px #ffd700; } }
+        #startBtn:hover { transform: scale(1.08); }
         
         .shop-btn { padding: 10px 18px; font-size: 14px; font-weight: bold; background: rgba(255,215,0,0.2); border: 2px solid #ffd700; color: #ffd700; border-radius: 30px; cursor: pointer; box-shadow: 0 0 15px rgba(255,215,0,0.4); transition: 0.3s; }
         .shop-btn:hover { background: rgba(255,215,0,0.4); color: white; transform: scale(1.05); }
@@ -98,15 +101,20 @@
         #restartBtn:hover { transform: scale(1.05); }
         
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; z-index: 10; padding: 0 15px; direction: ltr; align-items: center; display: none; }
-        .btn { width: 70px; height: 70px; background: rgba(0, 255, 255, 0.15); border: 2px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #00ffff; font-weight: bold; text-shadow: 0 0 12px #00ffff; touch-action: manipulation; backdrop-filter: blur(8px); box-shadow: 0 0 20px rgba(0,255,255,0.4); }
-        .btn:active { background: rgba(0, 255, 255, 0.6); color: #000; box-shadow: 0 0 35px #00ffff; }
+        .btn { width: 70px; height: 70px; background: rgba(0, 255, 255, 0.15); border: 2px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #00ffff; font-weight: bold; text-shadow: 0 0 12px #00ffff; touch-action: manipulation; backdrop-filter: blur(8px); box-shadow: 0 0 20px rgba(0,255,255,0.4); transition: 0.1s; }
+        .btn:active { background: rgba(0, 255, 255, 0.6); color: #000; box-shadow: 0 0 35px #00ffff; transform: scale(0.92); }
         .btn-fire { width: 75px; height: 75px; background: rgba(255, 0, 85, 0.2); border: 2px solid #ff0055; color: #ff0055; text-shadow: 0 0 12px #ff0055; box-shadow: 0 0 20px rgba(255,0,85,0.5); font-size: 24px; }
-        .btn-fire:active { background: rgba(255, 0, 85, 0.7); color: white; box-shadow: 0 0 40px #ff0055; }
+        .btn-fire:active { background: rgba(255, 0, 85, 0.7); color: white; box-shadow: 0 0 40px #ff0055; transform: scale(0.92); }
         .btn-time { width: 75px; height: 75px; background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700; color: #ffd700; text-shadow: 0 0 12px #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.5); font-size: 24px; }
-        .btn-time:active { background: rgba(255, 215, 0, 0.7); color: white; box-shadow: 0 0 40px #ffd700; }
+        .btn-time:active { background: rgba(255, 215, 0, 0.7); color: white; box-shadow: 0 0 40px #ffd700; transform: scale(0.92); }
+
+        /* وميض الشاشة عند الطوارئ أو جمع الجواهر النادرة */
+        #screenFlashOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; box-shadow: inset 0 0 0 rgba(0,255,255,0); transition: box-shadow 0.3s ease; }
     </style>
 </head>
 <body>
+    <div id="screenFlashOverlay"></div>
+
     <!-- شاشة الهنجار السيبراني لعام 6226 -->
     <div id="hangarScreen">
         <!-- قائمة اختيار 30 لغة عالمية أعلى يسار الشاشة -->
@@ -319,6 +327,14 @@
         function openLoreModal() { document.getElementById('loreModal').style.display = 'flex'; }
         function closeLoreModal() { document.getElementById('loreModal').style.display = 'none'; }
 
+        function triggerFlash(colorHex) {
+            let overlay = document.getElementById('screenFlashOverlay');
+            overlay.style.boxShadow = `inset 0 0 80px ${colorHex}`;
+            setTimeout(() => {
+                overlay.style.boxShadow = 'inset 0 0 0 rgba(0,255,255,0)';
+            }, 300);
+        }
+
         function buyShopItem(itemKey, cost) {
             if (playerCoins >= cost) {
                 playerCoins -= cost;
@@ -326,6 +342,7 @@
                 localStorage.setItem('cyberInventory', JSON.stringify(shopInventory));
                 updateUIStats();
                 showAchievementPopup("🎉 UNLOCKED: " + itemKey.toUpperCase() + "!");
+                triggerFlash('#00ffff');
                 playSound('boost');
             } else {
                 alert("Not enough Q-Coins! Play more matches to earn coins.");
@@ -342,6 +359,7 @@
                 localStorage.setItem('lastClaimDate', today);
                 updateUIStats();
                 showAchievementPopup("🎁 +50 Q-COINS CLAIMED!");
+                triggerFlash('#ffd700');
                 playSound('collect');
             }
         }
@@ -999,6 +1017,7 @@
         function triggerTimeWarp() {
             if (isGameOver || quantumEnergy < 50) return;
             playSound('time');
+            triggerFlash('#ffd700');
             quantumEnergy -= 50;
 
             timeWarpActive = true;
@@ -1025,6 +1044,7 @@
         function fireQuantumPulse() {
             if (isGameOver || quantumEnergy < 100) return;
             playSound('laser');
+            triggerFlash('#ff0055');
             quantumEnergy = 0;
 
             for (let i = 0; i < obstacles.length; i++) {
@@ -1069,11 +1089,13 @@
 
             if (currentRankIndex !== oldRankIdx) {
                 playSound('rankup');
+                triggerFlash('#ffd700');
                 showAchievementPopup("🏆 " + currentRankName);
             }
 
             if (currentLevel !== oldLevel) {
                 playSound('levelup');
+                triggerFlash('#00ffff');
                 if (currentLevel === 2) {
                     leftLine.material.color.setHex(0xff0055);
                     rightLine.material.color.setHex(0xff0055);
@@ -1230,11 +1252,13 @@
                             obs.position.z = -80;
                             obs.position.x = (Math.random() - 0.5) * 3;
                             playSound('shield');
+                            triggerFlash('#00ff88');
                             updateScoreDisplay();
                         } else {
                             isGameOver = true;
                             stopCyberpunkMusic();
                             playSound('crash');
+                            triggerFlash('#ff0055');
 
                             let earnedCoins = Math.floor(score / 5);
                             playerCoins += earnedCoins;
@@ -1276,14 +1300,17 @@
                             score += 15;
                             quantumEnergy = Math.min(100, quantumEnergy + 25);
                             playSound('collect');
+                            triggerFlash('#00ffff');
                         } else if (item.userData.type === 'boost') {
                             boostTimer = 200; 
                             quantumEnergy = Math.min(100, quantumEnergy + 40);
                             playSound('boost');
+                            triggerFlash('#ff00ff');
                         } else if (item.userData.type === 'shield') {
                             hasShield = true;
                             if(shieldMesh) shieldMesh.visible = true;
                             playSound('shield');
+                            triggerFlash('#00ff88');
                         }
                         
                         updateScoreDisplay();
