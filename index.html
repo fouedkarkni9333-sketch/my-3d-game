@@ -81,7 +81,7 @@
         .lore-btn { padding: 10px 18px; font-size: 14px; font-weight: bold; background: rgba(0,255,255,0.15); border: 2px solid #00ffff; color: #00ffff; border-radius: 30px; cursor: pointer; box-shadow: 0 0 15px rgba(0,255,255,0.4); transition: 0.3s; }
         .lore-btn:hover { background: rgba(0,255,255,0.3); color: white; transform: scale(1.05); }
 
-        #shopModal, #loreModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(1, 0, 5, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; color: white; backdrop-filter: blur(15px); padding: 20px; box-sizing: border-box; text-align: center; }
+        #shopModal, #loreModal, #hackModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(1, 0, 5, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 60; color: white; backdrop-filter: blur(15px); padding: 20px; box-sizing: border-box; text-align: center; }
         .shop-grid { display: flex; gap: 20px; margin: 20px 0; }
         .shop-item { background: rgba(0,255,255,0.05); border: 2px solid #00ffff; padding: 15px; border-radius: 15px; width: 140px; text-align: center; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
         .shop-item button { margin-top: 10px; background: #00ffff; border: none; padding: 6px 12px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #000; }
@@ -117,6 +117,13 @@
 <body>
     <div id="screenFlashOverlay"></div>
     <div id="floatingEmojiContainer"></div>
+
+    <div id="hackModal">
+        <h2 style="color: #00ffff; text-shadow: 0 0 20px #00ffff;">⚡ CYBER-HACK STAGE GATEWAY ⚡</h2>
+        <p style="color: #ff0055; font-size: 15px;">Tap the Quantum Code Sequence to Bypass Sector Firewall!</p>
+        <div id="hackSequenceBox" style="font-size: 28px; letter-spacing: 10px; color: #ffd700; margin: 20px; font-weight: bold;">0101</div>
+        <button class="shop-btn" style="font-size: 18px; padding: 12px 30px;" onclick="resolveHackSuccess()">BYPASS FIREWALL [⚡]</button>
+    </div>
 
     <div id="hangarScreen">
         <div class="language-select-container">
@@ -253,6 +260,7 @@
 
     <div id="quickEmoteBar">
         <button class="emote-btn" onclick="sendQuickEmote('🔥')">🔥</button>
+        <button class="emote-btn" onclick="sendQuickEmote('❤️')">❤️</button>
         <button class="emote-btn" onclick="sendQuickEmote('👑')">👑</button>
         <button class="emote-btn" onclick="sendQuickEmote('💥')">💥</button>
         <button class="emote-btn" onclick="sendQuickEmote('😂')">😂</button>
@@ -1005,6 +1013,7 @@
         let timeWarpActive = false;
         let gravityAngle = 0;
         let animationTime = 0;
+        let isHackActive = false;
 
         let highScore = localStorage.getItem('futureGameHighScore') || 0;
 
@@ -1073,7 +1082,7 @@
         };
 
         function handleJump() {
-            if (isGrounded && !isGameOver) {
+            if (isGrounded && !isGameOver && !isHackActive) {
                 playerVelocityY = 0.33;
                 if (playerBody) playerBody.velocity.y = 6;
                 isGrounded = false;
@@ -1086,6 +1095,7 @@
         setupBtn('btnJump', handleJump, () => {});
 
         window.addEventListener('keydown', (e) => {
+            if (isHackActive) return;
             if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft = true;
             if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = true;
             if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') handleJump();
@@ -1099,7 +1109,7 @@
         });
 
         function triggerTimeWarp() {
-            if (isGameOver || quantumEnergy < 50) return;
+            if (isGameOver || quantumEnergy < 50 || isHackActive) return;
             playSound('time');
             triggerFlash('#ffd700');
             quantumEnergy -= 50;
@@ -1126,7 +1136,7 @@
         timeBtn.addEventListener('mousedown', triggerTimeWarp);
 
         function fireQuantumPulse() {
-            if (isGameOver || quantumEnergy < 100) return;
+            if (isGameOver || quantumEnergy < 100 || isHackActive) return;
             playSound('laser');
             triggerFlash('#ff0055');
             quantumEnergy = 0;
@@ -1147,6 +1157,23 @@
         fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireQuantumPulse(); }, {passive: false});
         fireBtn.addEventListener('mousedown', fireQuantumPulse);
 
+        function triggerCyberHackChallenge() {
+            isHackActive = true;
+            let code = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('hackSequenceBox').innerText = code;
+            document.getElementById('hackModal').style.display = 'flex';
+            playSound('time');
+        }
+
+        function resolveHackSuccess() {
+            isHackActive = false;
+            document.getElementById('hackModal').style.display = 'none';
+            triggerFlash('#00ffff');
+            playSound('levelup');
+            showAchievementPopup("⚡ FIREWALL BYPASSED! HYPER-DRIVE ACTIVE!");
+            boostTimer = 180;
+        }
+
         function showAchievementPopup(text) {
             const pop = document.getElementById('achievementPopup');
             document.getElementById('popupText').innerText = text;
@@ -1159,7 +1186,6 @@
             let oldLevel = currentLevel;
             let oldRankIdx = currentRankIndex;
 
-            // نظام مراحل وتحديات تكنولوجية عميقة وليست مسهلة
             if (score < 80) currentLevel = 1;
             else if (score >= 80 && score < 220) currentLevel = 2;
             else currentLevel = 3;
@@ -1179,6 +1205,7 @@
             }
 
             if (currentLevel !== oldLevel) {
+                triggerCyberHackChallenge();
                 playSound('levelup');
                 triggerFlash('#00ffff');
                 if (currentLevel === 2) {
@@ -1214,6 +1241,7 @@
 
         function resetGame() {
             isGameOver = false;
+            isHackActive = false;
             score = 0;
             currentLevel = 1;
             currentRankIndex = 0;
@@ -1248,14 +1276,15 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            if (!isGameOver) {
+            if (!isGameOver && !isHackActive) {
                 physicsWorld.step(1 / 60);
 
                 animationTime += 0.15;
 
+                // عاصفة الجاذبية المعكوسة والدوران عند المستوى الثالث
                 if (currentLevel === 3) {
-                    gravityAngle += 0.012;
-                    scene.rotation.z = Math.sin(gravityAngle) * 0.07;
+                    gravityAngle += 0.015;
+                    scene.rotation.z = Math.sin(gravityAngle) * 0.12;
                 } else {
                     scene.rotation.z *= 0.9;
                 }
@@ -1270,7 +1299,7 @@
 
                 if (boostTimer > 0) {
                     boostTimer--;
-                    gameSpeed = baseGameSpeed * 2.3;
+                    gameSpeed = baseGameSpeed * 2.5;
                     if (boostTimer === 0) {
                         gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
@@ -1322,7 +1351,7 @@
 
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
-                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.2);
+                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.22);
                     obs.position.z += currentObsSpeed;
                     obs.rotation.x += 0.03;
                     obs.rotation.y += 0.04;
