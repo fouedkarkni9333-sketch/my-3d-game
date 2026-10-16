@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyber Horizon 6226 - Absolute Chaos Edition</title>
+    <title>Cyber Horizon 6226 - Real Voice & Chaos Edition</title>
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; touch-action: none; }
         
@@ -376,6 +376,8 @@
         let remotePlayers = {};
         let isPartyLeader = false;
         let localMediaStream = null;
+        let peerConnections = {};
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         const RENDER_SERVER_URL = 'https://my-3d-game-66js.onrender.com';
 
         function syncCloudScore(finalScore, coins) {
@@ -430,6 +432,10 @@
                         let p = partyData.players[id];
                         let isLeaderTag = (id === partyData.leader) ? ' 👑 [Leader]' : '';
                         memberListHtml += `- ${p.name}${isLeaderTag}<br>`;
+
+                        if (id !== socket.id && isVoiceActive && !peerConnections[id]) {
+                            setupWebRTCConnection(id, true);
+                        }
                     }
                     document.getElementById('partyMemberList').innerHTML = memberListHtml;
                     document.getElementById('squadStatusText').innerText = isPartyLeader ? `Status: Party Leader 👑 (${count} Players Ready)` : `Status: Synced in Room (${count} Players)`;
@@ -443,6 +449,24 @@
 
                 socket.on('launch_game_for_all', () => {
                     triggerCinematicGatewaySequence();
+                });
+
+                socket.on('webrtc_signal', async (data) => {
+                    let fromId = data.from;
+                    if (!peerConnections[fromId]) {
+                        setupWebRTCConnection(fromId, false);
+                    }
+                    let pc = peerConnections[fromId];
+                    if (data.sdp) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        if (data.sdp.type === 'offer') {
+                            let answer = await pc.createAnswer();
+                            await pc.setLocalDescription(answer);
+                            socket.emit('webrtc_signal', { to: fromId, sdp: pc.localDescription });
+                        }
+                    } else if (data.candidate) {
+                        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    }
                 });
 
                 socket.on('update_players', (players) => {
@@ -473,6 +497,35 @@
                 socket.emit('join_room', { roomCode, playerName, vehicleType: selectedCharType });
             }
             playSound('boost');
+        }
+
+        function setupWebRTCConnection(remoteId, isInitiator) {
+            let pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[remoteId] = pc;
+
+            if (localMediaStream) {
+                localMediaStream.getTracks().forEach(track => pc.addTrack(track, localMediaStream));
+            }
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && socket) {
+                    socket.emit('webrtc_signal', { to: remoteId, candidate: event.candidate });
+                }
+            };
+
+            pc.ontrack = (event) => {
+                let remoteAudio = document.createElement('audio');
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.autoplay = true;
+                document.body.appendChild(remoteAudio);
+            };
+
+            if (isInitiator) {
+                pc.createOffer().then(offer => {
+                    pc.setLocalDescription(offer);
+                    socket.emit('webrtc_signal', { to: remoteId, sdp: offer });
+                });
+            }
         }
 
         let tetherLines = {};
@@ -609,7 +662,7 @@
                     isVoiceActive = true;
                     btn.innerText = "ON";
                     btn.classList.add('active');
-                    status.innerText = "🎤 Voice Active & Connected!";
+                    status.innerText = "🎤 Real Voice Chat Active & Connected!";
                     playSound('boost');
                 } catch (err) {
                     alert("Unable to access microphone. Please allow microphone permissions in your browser.");
