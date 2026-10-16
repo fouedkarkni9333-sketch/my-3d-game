@@ -94,6 +94,10 @@
         .emote-btn:active { transform: scale(1.3); }
         #squadLiveLeaderboard { position: absolute; left: 15px; top: 120px; background: rgba(5,2,20,0.8); border: 1px solid #ffd700; border-radius: 10px; padding: 8px 12px; font-size: 11px; color: #ffd700; z-index: 15; display: none; }
 
+        #floatingEmojiContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 12; overflow: hidden; }
+        .floating-emoji { position: absolute; font-size: 28px; animation: floatUpEmoji 1.5s ease-out forwards; text-shadow: 0 0 10px #00ffff; }
+        @keyframes floatUpEmoji { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-80px) scale(1.4); opacity: 0; } }
+
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(1, 0, 5, 0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: white; text-align: center; backdrop-filter: blur(12px); }
         #gameOverScreen h1 { font-size: 38px; margin-bottom: 10px; color: #ff0055; text-shadow: 0 0 25px #ff0055; }
         #restartBtn { padding: 12px 35px; font-size: 20px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 30px rgba(0,255,255,0.7); margin-top: 15px; transition: 0.3s; }
@@ -112,6 +116,7 @@
 </head>
 <body>
     <div id="screenFlashOverlay"></div>
+    <div id="floatingEmojiContainer"></div>
 
     <div id="hangarScreen">
         <div class="language-select-container">
@@ -261,7 +266,7 @@
     <div id="scoreBoard">
         <div class="side-panel" id="leftPanel" style="text-align: left;">
             Score: <span id="scoreVal">0</span><br>
-            <span id="levelIndicator">Sector 1: Neon Grid</span>
+            <span id="levelIndicator">Stage 1: Neon Grid Matrix</span>
         </div>
         <div class="side-panel" id="rightPanel" style="text-align: right;">
             Rank: <span id="rankDisplay">Cyber Trainee</span><br>
@@ -357,6 +362,7 @@
         let socket = null;
         let remotePlayers = {};
         let isPartyLeader = false;
+        let localMediaStream = null;
         const RENDER_SERVER_URL = 'https://my-3d-game-66js.onrender.com';
 
         function syncCloudScore(finalScore, coins) {
@@ -370,11 +376,24 @@
             }
         }
 
+        function showFloatingEmoji(emoji, xPercent, yPercent) {
+            const container = document.getElementById('floatingEmojiContainer');
+            const el = document.createElement('div');
+            el.className = 'floating-emoji';
+            el.innerText = emoji;
+            el.style.left = (xPercent || (30 + Math.random() * 40)) + '%';
+            el.style.top = (yPercent || (40 + Math.random() * 20)) + '%';
+            container.appendChild(el);
+            setTimeout(() => { el.remove(); }, 1500);
+        }
+
         function sendQuickEmote(emoji) {
-            if (socket) {
+            showFloatingEmoji(emoji, 50, 50);
+            if (socket && socket.connected) {
                 socket.emit('send_emote', { emoji, name: document.getElementById('playerNameInput').value });
-                showAchievementPopup(emoji + " SENT!");
             }
+            showAchievementPopup(emoji + " SENT!");
+            playSound('collect');
         }
 
         function joinPartyLobby() {
@@ -402,6 +421,7 @@
                 });
 
                 socket.on('receive_emote', (data) => {
+                    showFloatingEmoji(data.emoji, 50, 45);
                     showAchievementPopup(`${data.name}: ${data.emoji}`);
                     playSound('collect');
                 });
@@ -440,11 +460,34 @@
         }
 
         function createRemotePlayer(id, type) {
-            const geo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x550055, wireframe: true });
-            const mesh = new THREE.Mesh(geo, mat);
-            scene.add(mesh);
-            remotePlayers[id] = mesh;
+            const remoteRobotGroup = new THREE.Group();
+
+            const bodyGeo = new THREE.BoxGeometry(0.5, 0.7, 0.4);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff0055, metalness: 0.8, roughness: 0.2 });
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.y = 0.35;
+            remoteRobotGroup.add(bodyMesh);
+
+            const coreGeo = new THREE.BoxGeometry(0.3, 0.3, 0.45);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+            const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+            coreMesh.position.set(0, 0.35, 0);
+            remoteRobotGroup.add(coreMesh);
+
+            const headGeo = new THREE.BoxGeometry(0.45, 0.4, 0.4);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0x440022, metalness: 0.9, roughness: 0.1 });
+            const headMesh = new THREE.Mesh(headGeo, headMat);
+            headMesh.position.y = 0.85;
+            remoteRobotGroup.add(headMesh);
+
+            const eyeGeo = new THREE.BoxGeometry(0.35, 0.08, 0.05);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+            const visor = new THREE.Mesh(eyeGeo, eyeMat);
+            visor.position.set(0, 0.88, 0.21);
+            remoteRobotGroup.add(visor);
+
+            scene.add(remoteRobotGroup);
+            remotePlayers[id] = remoteRobotGroup;
         }
 
         function requestStartGame() {
@@ -492,16 +535,27 @@
             }
         }
 
-        function toggleVoiceChat() {
-            isVoiceActive = !isVoiceActive;
+        async function toggleVoiceChat() {
             const btn = document.getElementById('voiceToggleBtn');
             const status = document.getElementById('squadStatusText');
-            if (isVoiceActive) {
-                btn.innerText = "ON";
-                btn.classList.add('active');
-                status.innerText = "Voice Channel Connected!";
-                playSound('boost');
+
+            if (!isVoiceActive) {
+                try {
+                    localMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isVoiceActive = true;
+                    btn.innerText = "ON";
+                    btn.classList.add('active');
+                    status.innerText = "🎤 Voice Active & Connected!";
+                    playSound('boost');
+                } catch (err) {
+                    alert("Unable to access microphone. Please allow microphone permissions in your browser.");
+                    console.error("Mic access error:", err);
+                }
             } else {
+                if (localMediaStream) {
+                    localMediaStream.getTracks().forEach(track => track.stop());
+                }
+                isVoiceActive = false;
                 btn.innerText = "🎤";
                 btn.classList.remove('active');
                 status.innerText = "Microphone Muted.";
@@ -513,7 +567,7 @@
                 title: "CYBER HORIZON 6226", sub: "Absolute Quantum Consciousness Matrix", start: "INITIALIZE MATRIX",
                 c1: "Neon Unit", c1d: "Balanced Speed", c2: "Quantum Mecha", c2d: "High Durability", c3: "Warp Drone", c3d: "Anti-Gravity",
                 score: "Score", rank: "Rank", energy: "Quantum Energy", high: "High Score",
-                l1: "Sector 1: Neon Grid", l2: "Sector 2: Crimson Storm", l3: "Sector 3: Cosmic Awareness",
+                l1: "Stage 1: Neon Grid Matrix", l2: "Stage 2: Crimson AI Storm", l3: "Stage 3: Cosmic Singularity",
                 r0: "Cyber Trainee", r1: "Galaxy Guardian", r2: "Dimension Commander", r3: "Absolute God",
                 go: "SYSTEM FAILURE!", final: "Final Score", restart: "REBOOT SYSTEM", newHigh: "🎉 New Quantum Record!"
             },
@@ -521,7 +575,7 @@
                 title: "سايبر هورايزون 6226", sub: "مصفوفة الوعي الكمومي المطلق", start: "تشغيل المصفوفة",
                 c1: "الوحدة النيونية", c1d: "تزامن ذكي فائق", c2: "المحارب الكمومي", c2d: "صلابة الأبعاد العليا", c3: "طائرة الزمكان", c3d: "انعدام الجاذبية الكلي",
                 score: "النقاط", rank: "الرتبة", energy: "طاقة الوعي", high: "أعلى نتيجة",
-                l1: "المستوى 1: قطاع النيون", l2: "المستوى 2: العاصفة الحمراء", l3: "المستوى 3: الوعي الكوني",
+                l1: "المرحلة 1: مصفوفة شبكة النيون", l2: "المرحلة 2: عاصفة الذكاء الاصطناعي", l3: "المرحلة 3: التفرد الكوني المطلق",
                 r0: "متدرب سبراني", r1: "حارس المجرة", r2: "قائد الأبعاد", r3: "إله الوعي المطلق",
                 go: "انهيار مصفوفة الوعي!", final: "النقاط النهائية", restart: "إعادة التشغيل", newHigh: "🎉 رقم قياسي جديد!"
             },
@@ -529,7 +583,7 @@
                 title: "CYBER HORIZON 6226", sub: "Matrice de Conscience Quantique", start: "INITIALISER",
                 c1: "Unité Néon", c1d: "Vitesse Équilibrée", c2: "Mécha Quantique", c2d: "Haute Durabilité", c3: "Drone Warp", c3d: "Anti-Gravité",
                 score: "Score", rank: "Rang", energy: "Énergie", high: "Meilleur",
-                l1: "Secteur 1: Grille Néon", l2: "Secteur 2: Tempête Pourpre", l3: "Secteur 3: Conscience Cosmique",
+                l1: "Étape 1: Grille Néon", l2: "Étape 2: Tempête IA", l3: "Étape 3: Singularité Cosmique",
                 r0: "Stagiaire Cyber", r1: "Gardien Galactique", r2: "Commandant", r3: "Dieu Absolu",
                 go: "ÉCHEC DU SYSTÈME !", final: "Score Final", restart: "REDÉMARRER", newHigh: "🎉 Nouveau Record !"
             },
@@ -537,7 +591,7 @@
                 title: "CYBER HORIZON 6226", sub: "Matriz de Conciencia Cuántica", start: "INICIALIZAR",
                 c1: "Unidad Neón", c1d: "Velocidad Equilibrada", c2: "Mecha Cuántico", c2d: "Alta Durabilidad", c3: "Drone Warp", c3d: "Antigravedad",
                 score: "Puntuación", rank: "Rango", energy: "Energía", high: "Mejor",
-                l1: "Sector 1: Red Neón", l2: "Sector 2: Tormenta Carmesí", l3: "Sector 3: Conciencia Cósmica",
+                l1: "Fase 1: Red Neón", l2: "Fase 2: Tormenta IA", l3: "Fase 3: Singularidad Cósmica",
                 r0: "Trecario Cyber", r1: "Guardián Galáctico", r2: "Comandante", r3: "Dios Absoluto",
                 go: "¡FALLO DEL SISTEMA!", final: "Puntuación Final", restart: "REINICIAR", newHigh: "🎉 ¡Nuevo Récord!"
             },
@@ -545,7 +599,7 @@
                 title: "CYBER HORIZON 6226", sub: "Quanten-Bewusstseins-Matrix", start: "STARTEN",
                 c1: "Neon-Einheit", c1d: "Ausgeglichene Speed", c2: "Quanten-Mecha", c2d: "Hohe Haltbarkeit", c3: "Warp-Drohne", c3d: "Antigravitation",
                 score: "Punktzahl", rank: "Rang", energy: "Energie", high: "Bestwert",
-                l1: "Sektor 1: Neon-Gitter", l2: "Sektor 2: Purpurner Sturm", l3: "Sektor 3: Kosmisches Bewusstsein",
+                l1: "Stufe 1: Neon-Gitter", l2: "Stufe 2: KI-Sturm", l3: "Stufe 3: Kosmische Singularität",
                 r0: "Cyber-Azubi", r1: "Galaxie-Wächter", r2: "Dimensions-Kommandant", r3: "Absoluter Gott",
                 go: "SYSTEMFEHLER!", final: "Endpunktzahl", restart: "NEustart", newHigh: "🎉 Neuer Rekord!"
             },
@@ -553,7 +607,7 @@
                 title: "サイバーホライゾン 6226", sub: "絶対量子意識マトリックス", start: "マトリックス起動",
                 c1: "ネオンユニット", c1d: "バランス型", c2: "量子メカ", c2d: "高耐久", c3: "ワープドローン", c3d: "反重力",
                 score: "スコア", rank: "ランク", energy: "量子エネルギー", high: "ハイスコア",
-                l1: "セクター1: ネオングリッド", l2: "セクター2: 紅の嵐", l3: "セクター3: 宇宙意識",
+                l1: "ステージ1: ネオングリッド", l2: "ステージ2: AI嵐", l3: "ステージ3: 宇宙特異点",
                 r0: "サイバー研修生", r1: "銀河の守護者", r2: "次元司令官", r3: "絶対神",
                 go: "システムエラー！", final: "最終スコア", restart: "再起動", newHigh: "🎉 新記録達成！"
             },
@@ -561,7 +615,7 @@
                 title: "CYBER HORIZON 6226", sub: "Квантовая матрица сознания", start: "ЗАПУСК",
                 c1: "Неоновый юнит", c1d: "Баланс скорости", c2: "Квантовый мех", c2d: "Прочность", c3: "Варп-дрон", c3d: "Антигравитация",
                 score: "Счет", rank: "Ранг", energy: "Энергия", high: "Рекорд",
-                l1: "Сектор 1: Неон", l2: "Сектор 2: Багровый шторм", l3: "Сектор 3: Космос",
+                l1: "Этап 1: Неоновая сетка", l2: "Этап 2: ИИ шторм", l3: "Этап 3: Сингулярность",
                 r0: "Стажер", r1: "Страж галактики", r2: "Командир", r3: "Абсолютный бог",
                 go: "СБОЙ СИСТЕМЫ!", final: "Итог", restart: "ПЕРЕЗАГРУЗКА", newHigh: "🎉 Новый рекорд!"
             },
@@ -569,7 +623,7 @@
                 title: "赛博地平线 6226", sub: "绝对量子意识矩阵", start: "启动矩阵",
                 c1: "霓虹单位", c1d: "平衡速度", c2: "量子机甲", c2d: "高耐久", c3: "跃迁无人机", c3d: "反重力",
                 score: "得分", rank: "军衔", energy: "量子能量", high: "最高分",
-                l1: "第一区：霓虹网格", l2: "第二区：赤红风暴", l3: "第三区：宇宙意识",
+                l1: "阶段1：霓虹网格", l2: "阶段2：人工智能风暴", l3: "阶段3：宇宙奇点",
                 r0: "赛博学员", r1: "银河守护者", r2: "维度指挥官", r3: "绝对神明",
                 go: "系统崩溃！", final: "最终得分", restart: "重新启动", newHigh: "🎉 新纪录！"
             }
@@ -755,10 +809,9 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         
-        // تحسين أداء الجوال: ضبط نسبة بكسلات الشاشة التكيفية لضمان 60 إطاراً في الثانية
         const pixelRatio = Math.min(window.devicePixelRatio, 2);
         renderer.setPixelRatio(pixelRatio);
-        renderer.shadowMap.enabled = false; // تعطيل الظلال الثقيلة لزيادة سرعة الجوال
+        renderer.shadowMap.enabled = false;
         document.body.appendChild(renderer.domElement);
 
         const renderScene = new THREE.RenderPass(scene, camera);
@@ -1106,13 +1159,14 @@
             let oldLevel = currentLevel;
             let oldRankIdx = currentRankIndex;
 
-            if (score < 50) currentLevel = 1;
-            else if (score >= 50 && score < 150) currentLevel = 2;
+            // نظام مراحل وتحديات تكنولوجية عميقة وليست مسهلة
+            if (score < 80) currentLevel = 1;
+            else if (score >= 80 && score < 220) currentLevel = 2;
             else currentLevel = 3;
 
-            if (score >= 300) currentRankIndex = 3;
-            else if (score >= 150) currentRankIndex = 2;
-            else if (score >= 50) currentRankIndex = 1;
+            if (score >= 400) currentRankIndex = 3;
+            else if (score >= 220) currentRankIndex = 2;
+            else if (score >= 80) currentRankIndex = 1;
             else currentRankIndex = 0;
 
             let rankKeys = ['r0', 'r1', 'r2', 'r3'];
@@ -1268,7 +1322,7 @@
 
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
-                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.15);
+                    let currentObsSpeed = gameSpeed * (1 + (currentLevel - 1) * 0.2);
                     obs.position.z += currentObsSpeed;
                     obs.rotation.x += 0.03;
                     obs.rotation.y += 0.04;
@@ -1277,7 +1331,7 @@
                         obs.position.z = -80;
                         obs.position.x = (Math.random() - 0.5) * 3;
                         score += 5;
-                        baseGameSpeed += 0.0012;
+                        baseGameSpeed += 0.0015;
                         if (boostTimer === 0) gameSpeed = baseGameSpeed;
                         updateScoreDisplay();
                     }
