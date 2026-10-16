@@ -97,6 +97,12 @@
         .btn-fire:active { background: rgba(255, 0, 85, 0.7); color: white; box-shadow: 0 0 40px #ff0055; }
         .btn-time { width: 75px; height: 75px; background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700; color: #ffd700; text-shadow: 0 0 12px #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.5); font-size: 24px; }
         .btn-time:active { background: rgba(255, 215, 0, 0.7); color: white; box-shadow: 0 0 40px #ffd700; }
+
+        /* شريط التفاعلات التفاخرية السريعة والتنافس المباشر */
+        #quickEmoteBar { position: absolute; right: 15px; top: 120px; display: none; flex-direction: column; gap: 8px; z-index: 15; }
+        .emote-btn { background: rgba(5,2,20,0.8); border: 1px solid #00ffff; font-size: 20px; padding: 6px; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(0,255,255,0.3); transition: 0.2s; }
+        .emote-btn:active { transform: scale(1.3); }
+        #squadLiveLeaderboard { position: absolute; left: 15px; top: 120px; background: rgba(5,2,20,0.8); border: 1px solid #ffd700; border-radius: 10px; padding: 8px 12px; font-size: 11px; color: #ffd700; z-index: 15; display: none; }
     </style>
 </head>
 <body>
@@ -225,8 +231,22 @@
         <button class="shop-btn" onclick="closeShopModal()">BACK TO LOBBY</button>
     </div>
 
-    <!-- إشعار الترقية الأسطوري -->
+    <!-- إشعار الترقية الأسطوري والتفاعلات أونلاين -->
     <div id="achievementPopup"><span id="popupText">🏆 RANK UP!</span></div>
+
+    <!-- شريط التفاعلات الجماعية المباشرة -->
+    <div id="quickEmoteBar">
+        <button class="emote-btn" onclick="sendQuickEmote('🔥')">🔥</button>
+        <button class="emote-btn" onclick="sendQuickEmote('👑')">👑</button>
+        <button class="emote-btn" onclick="sendQuickEmote('💥')">💥</button>
+        <button class="emote-btn" onclick="sendQuickEmote('😂')">😂</button>
+    </div>
+
+    <!-- لوحة الترتيب الحي للسكواد أثناء المباراة -->
+    <div id="squadLiveLeaderboard">
+        <strong>🌐 Squad Standings:</strong>
+        <div id="squadScoresList">Connecting...</div>
+    </div>
 
     <!-- لوحة النتائج مقسمة على الجانبين الأيمن والأيسر لمنع حجب الرؤية في المنتصف تماماً -->
     <div id="scoreBoard">
@@ -309,13 +329,20 @@
             }
         }
 
-        // 🌐 إضافات الاتصال الجماعي وقائد الفريق (Party Leader)
+        // 🌐 إضافات الاتصال الجماعي وقائد الفريق والتفاعلات الحية (Party Leader & Emotes)
         let socket = null;
         let remotePlayers = {};
         let isPartyLeader = false;
         
         // 🔗 رابط سيرفر Render الخاص بك المحدث
         const RENDER_SERVER_URL = 'https://my-3d-game-66js.onrender.com';
+
+        function sendQuickEmote(emoji) {
+            if (socket) {
+                socket.emit('send_emote', { emoji, name: document.getElementById('playerNameInput').value });
+                showAchievementPopup(emoji + " SENT!");
+            }
+        }
 
         function joinPartyLobby() {
             let roomCode = document.getElementById('roomCodeInput').value.trim();
@@ -341,16 +368,25 @@
                     document.getElementById('squadStatusText').innerText = isPartyLeader ? "Status: You are Party Leader 👑" : "Status: Joined Party Room";
                 });
 
+                socket.on('receive_emote', (data) => {
+                    showAchievementPopup(`${data.name}: ${data.emoji}`);
+                    playSound('collect');
+                });
+
                 socket.on('launch_game_for_all', () => {
                     launchGameSession();
                 });
 
                 socket.on('update_players', (players) => {
+                    let liveScoreHtml = "";
                     for (let id in players) {
                         if (id !== socket.id && !remotePlayers[id]) {
                             createRemotePlayer(id, players[id].vehicle);
                         }
+                        liveScoreHtml += `${players[id].name}: ${players[id].score || 0}<br>`;
                     }
+                    document.getElementById('squadScoresList').innerHTML = liveScoreHtml;
+
                     for (let id in remotePlayers) {
                         if (!players[id]) {
                             scene.remove(remotePlayers[id]);
@@ -397,6 +433,12 @@
             document.getElementById('hangarScreen').style.display = 'none';
             document.getElementById('scoreBoard').style.display = 'flex';
             document.getElementById('gameControls').style.display = 'flex';
+            
+            if (currentGameMode === 'squad' || currentGameMode === 'duo') {
+                document.getElementById('quickEmoteBar').style.display = 'flex';
+                document.getElementById('squadLiveLeaderboard').style.display = 'block';
+            }
+
             startCyberpunkMusic();
             resetGame();
         }
@@ -812,7 +854,7 @@
             const shieldMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.3, wireframe: true });
             shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
             shieldMesh.position.y = 0.4;
-            shieldMesh.visible = shopInventory.shield; // تفعيل درع المتجر المشتراة
+            shieldMesh.visible = shopInventory.shield; 
             hasShield = shopInventory.shield;
             player.add(shieldMesh);
         }
@@ -1053,7 +1095,7 @@
             currentRankIndex = 0;
             baseGameSpeed = 0.13;
             gameSpeed = baseGameSpeed;
-            boostTimer = shopInventory.boost ? 50 : 0; // تعزيز البوستر إذا تم شراؤه من المتجر
+            boostTimer = shopInventory.boost ? 50 : 0;
             quantumEnergy = 0;
             hasShield = shopInventory.shield;
             if(shieldMesh) shieldMesh.visible = hasShield;
@@ -1177,7 +1219,6 @@
                             stopCyberpunkMusic();
                             playSound('crash');
 
-                            // حساب العملات المكتسبة بناءً على النتيجة وتحديث مستويات الحساب
                             let earnedCoins = Math.floor(score / 5);
                             playerCoins += earnedCoins;
                             accountLevel += Math.floor(score / 100);
@@ -1235,7 +1276,7 @@
                     }
                 }
 
-                // 🌐 بث إحداثيات اللاعب الحيّة للأصدقاء أونلاين
+                // 🌐 بث إحداثيات ونقاط اللاعب الحيّة للأصدقاء أونلاين
                 if (socket) {
                     socket.emit('player_move', {
                         x: player.position.x,
