@@ -1166,5 +1166,39 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
+    
+    <!-- ⚡ النظام الخارق المضاف لزيادة المتعة والتشويق ⚡ -->
+    <script>
+        let superLaserPower = false;
+        let superLaserTimer = null;
+
+        // إضافة سلاح الليزر الخارق عند شحن الطاقة للحد الأقصى (100%)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyE' && quantumEnergy >= 100) {
+                activateSuperPower();
+            }
+        });
+
+        function activateSuperPower() {
+            quantumEnergy = 0;
+            superLaserPower = true;
+            playSound('laser');
+            showAchievementPopup("⚡ SUPER QUANTUM OVERDRIVE! ⚡");
+
+            // تدمير جميع العوائق الظاهرة على الشاشة فوراً
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].position.z = -100;
+                score += 30;
+            }
+            updateScoreDisplay();
+
+            // إضاءة احتفالية شاشة اللعبة
+            scene.background = new THREE.Color(0x330066);
+            setTimeout(() => {
+                scene.background = new THREE.Color(fogColor);
+                superLaserPower = false;
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
