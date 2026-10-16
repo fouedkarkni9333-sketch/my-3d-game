@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Cyber Horizon 6226 - Ultimate Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
+        body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; touch-action: none; }
         
         #scoreBoard { 
             position: absolute; 
@@ -752,9 +752,13 @@
         physicsWorld.gravity.set(0, -9.82, 0);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
+        
+        // تحسين أداء الجوال: ضبط نسبة بكسلات الشاشة التكيفية لضمان 60 إطاراً في الثانية
+        const pixelRatio = Math.min(window.devicePixelRatio, 2);
+        renderer.setPixelRatio(pixelRatio);
+        renderer.shadowMap.enabled = false; // تعطيل الظلال الثقيلة لزيادة سرعة الجوال
         document.body.appendChild(renderer.domElement);
 
         const renderScene = new THREE.RenderPass(scene, camera);
@@ -1009,8 +1013,8 @@
         const setupBtn = (id, onPress, onRelease) => {
             const el = document.getElementById(id);
             if(!el) return;
-            el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); });
-            el.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); });
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); }, {passive: false});
+            el.addEventListener('touchend', (e) => { e.preventDefault(); onRelease(); }, {passive: false});
             el.addEventListener('mousedown', onPress);
             el.addEventListener('mouseup', onRelease);
         };
@@ -1065,7 +1069,7 @@
         }
 
         const timeBtn = document.getElementById('btnTime');
-        timeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerTimeWarp(); });
+        timeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerTimeWarp(); }, {passive: false});
         timeBtn.addEventListener('mousedown', triggerTimeWarp);
 
         function fireQuantumPulse() {
@@ -1087,7 +1091,7 @@
         }
 
         const fireBtn = document.getElementById('btnFire');
-        fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireQuantumPulse(); });
+        fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireQuantumPulse(); }, {passive: false});
         fireBtn.addEventListener('mousedown', fireQuantumPulse);
 
         function showAchievementPopup(text) {
@@ -1309,7 +1313,6 @@
                                 isNewHighScore = true;
                             }
 
-                            // مزامنة النقاط والبيانات مع السيرفر السحابي وقاعدة البيانات
                             syncCloudScore(score, playerCoins);
 
                             document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
