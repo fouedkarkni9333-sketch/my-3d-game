@@ -7,7 +7,6 @@
     <style>
         body { margin: 0; overflow: hidden; background: #010005; font-family: Tahoma, sans-serif; user-select: none; transition: background 1s ease; }
         
-        /* لوحة النتائج مقسمة على الجانب الأيمن واليسار لحجب الرؤية عن المنتصف تماماً */
         #scoreBoard { 
             position: absolute; 
             top: 15px; 
@@ -39,40 +38,49 @@
         #energyContainer { width: 140px; height: 8px; background: rgba(255,255,255,0.2); border: 1px solid #00ffff; border-radius: 4px; margin-top: 4px; overflow: hidden; box-shadow: 0 0 8px rgba(0,255,255,0.5); }
         #energyBar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff0055, #ffd700); transition: width 0.2s ease; }
         
-        /* شاشة الهنجار الأبعادي لعام 6226 والإعدادات */
         #hangarScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a021f 0%, #010005 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; color: white; text-align: center; backdrop-filter: blur(20px); overflow-y: auto; padding: 20px; box-sizing: border-box;}
         
-        /* موقع قائمة اللغات في أعلى اليسار فوق عنوان اللعبة */
         .language-select-container { position: absolute; top: 15px; left: 20px; z-index: 40; }
         .language-select-container select { background: rgba(0,255,255,0.1); border: 2px solid #00ffff; color: #00ffff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; outline: none; cursor: pointer; box-shadow: 0 0 12px rgba(0,255,255,0.3); }
         .language-select-container select option { background: #050214; color: #fff; }
 
-        #hangarScreen h1 { font-size: 36px; margin-bottom: 5px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
-        #hangarScreen p { font-size: 14px; color: #ff0055; margin-bottom: 15px; text-shadow: 0 0 12px #ff0055; }
+        #hangarScreen h1 { font-size: 32px; margin-bottom: 2px; color: #00ffff; text-shadow: 0 0 30px #00ffff, 0 0 15px #ff0055; letter-spacing: 2px; }
+        #hangarScreen p { font-size: 13px; color: #ff0055; margin-bottom: 10px; text-shadow: 0 0 12px #ff0055; }
         
-        /* أنماط اللعب الثلاثة: Solo, Duo, Squad 6+ */
-        .mode-selection { display: flex; gap: 15px; margin-bottom: 15px; }
-        .mode-card { width: 110px; padding: 10px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
+        /* شريط العملات والتقدم في اللوبي */
+        #playerStatsBar { background: rgba(0,255,255,0.1); border: 1px solid rgba(0,255,255,0.4); padding: 6px 20px; border-radius: 20px; margin-bottom: 12px; font-size: 13px; color: #ffd700; box-shadow: 0 0 10px rgba(0,255,255,0.2); display: flex; gap: 15px; align-items: center; }
+
+        .mode-selection { display: flex; gap: 12px; margin-bottom: 12px; }
+        .mode-card { width: 100px; padding: 8px; background: rgba(0,255,255,0.05); border: 2px solid rgba(0,255,255,0.3); border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
         .mode-card:hover, .mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
-        .mode-card h4 { margin: 5px 0; color: #fff; font-size: 14px; }
-        .mode-card span { font-size: 11px; color: #aaa; }
+        .mode-card h4 { margin: 3px 0; color: #fff; font-size: 13px; }
+        .mode-card span { font-size: 10px; color: #aaa; }
 
-        /* نافذة إعدادات الغرفة الصوتية والشبكة أونلاين */
-        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 12px 20px; border-radius: 15px; margin-bottom: 15px; width: 340px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
-        #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 6px 10px; border-radius: 8px; width: 42%; text-align: center; font-weight: bold; outline: none; margin: 3px; }
-        .net-btn { background: #00ffff; color: #000; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #00ffff; }
-        .voice-btn { background: #ff0055; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 3px; box-shadow: 0 0 10px #ff0055; }
+        #squadConfigPanel { display: none; background: rgba(0,255,255,0.08); border: 1px solid #00ffff; padding: 10px 15px; border-radius: 15px; margin-bottom: 12px; width: 320px; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
+        #squadConfigPanel input { background: #010005; border: 1px solid #00ffff; color: #00ffff; padding: 5px 8px; border-radius: 8px; width: 40%; text-align: center; font-weight: bold; outline: none; margin: 2px; }
+        .net-btn { background: #00ffff; color: #000; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 2px; box-shadow: 0 0 10px #00ffff; }
+        .voice-btn { background: #ff0055; color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 2px; box-shadow: 0 0 10px #ff0055; }
         .voice-btn.active { background: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; }
-        #partyMemberList { background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.2); border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 12px; color: #ffd700; text-align: left; max-height: 80px; overflow-y: auto; }
+        #partyMemberList { background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.2); border-radius: 8px; padding: 6px; margin-top: 6px; font-size: 11px; color: #ffd700; text-align: left; max-height: 60px; overflow-y: auto; }
 
-        .character-options { display: flex; gap: 15px; margin-bottom: 20px; }
-        .char-card { width: 120px; padding: 12px; background: rgba(255,255,255,0.04); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(0,255,255,0.1); }
+        .character-options { display: flex; gap: 12px; margin-bottom: 15px; }
+        .char-card { width: 110px; padding: 10px; background: rgba(255,255,255,0.04); border: 2px solid rgba(0,255,255,0.3); border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(0,255,255,0.1); }
         .char-card:hover, .char-card.selected { border-color: #00ffff; background: rgba(0,255,255,0.2); box-shadow: 0 0 30px #00ffff; transform: scale(1.08); }
-        .char-card h3 { font-size: 15px; margin: 8px 0 4px 0; color: #fff; }
-        .char-card span { font-size: 11px; color: #aaa; }
+        .char-card h3 { font-size: 14px; margin: 6px 0 2px 0; color: #fff; }
+        .char-card span { font-size: 10px; color: #aaa; }
         
-        #startBtn { padding: 12px 35px; font-size: 20px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055, #ffd700); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 35px rgba(0,255,255,0.9); transition: 0.3s; }
+        .action-buttons { display: flex; gap: 10px; justify-content: center; }
+        #startBtn { padding: 10px 30px; font-size: 18px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #ff0055, #ffd700); color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 35px rgba(0,255,255,0.9); transition: 0.3s; }
         #startBtn:hover { transform: scale(1.08); box-shadow: 0 0 50px #00ffff; }
+        
+        .shop-btn { padding: 10px 20px; font-size: 15px; font-weight: bold; background: rgba(255,215,0,0.2); border: 2px solid #ffd700; color: #ffd700; border-radius: 30px; cursor: pointer; box-shadow: 0 0 15px rgba(255,215,0,0.4); transition: 0.3s; }
+        .shop-btn:hover { background: rgba(255,215,0,0.4); color: white; transform: scale(1.05); }
+
+        /* نافذة متجر الهنجار والمكافآت */
+        #shopModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(1, 0, 5, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; color: white; backdrop-filter: blur(15px); }
+        .shop-grid { display: flex; gap: 20px; margin: 20px 0; }
+        .shop-item { background: rgba(0,255,255,0.05); border: 2px solid #00ffff; padding: 15px; border-radius: 15px; width: 140px; text-align: center; box-shadow: 0 0 15px rgba(0,255,255,0.2); }
+        .shop-item button { margin-top: 10px; background: #00ffff; border: none; padding: 6px 12px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #000; }
 
         #achievementPopup { position: absolute; top: 90px; width: 100%; text-align: center; z-index: 15; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
         #achievementPopup span { background: rgba(0, 255, 255, 0.3); border: 2px solid #00ffff; color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 15px; font-weight: bold; box-shadow: 0 0 25px #00ffff; text-shadow: 0 0 12px #00ffff; }
@@ -133,20 +141,27 @@
         <h1 id="uiTitle">CYBER HORIZON 6226</h1>
         <p id="uiSub">Absolute Quantum Consciousness Matrix</p>
         
+        <!-- شريط العملات والتقدم العميق (Progression System) -->
+        <div id="playerStatsBar">
+            <span>💎 Q-Coins: <strong id="playerCoins">100</strong></span>
+            <span>⭐ Account LVL: <strong id="accountLevel">1</strong></span>
+            <span>🎁 <a href="#" onclick="claimDailyReward(); return false;" style="color: #00ffff; text-decoration: underline;">Daily Reward</a></span>
+        </div>
+
         <!-- اختيار نمط اللعب (Solo / Duo / Squad 6+) -->
         <div class="mode-selection">
             <div class="mode-card selected" onclick="selectGameMode('solo', this)">
-                <div style="font-size: 24px;">👤</div>
+                <div style="font-size: 22px;">👤</div>
                 <h4>Solo Matrix</h4>
                 <span>Single Player</span>
             </div>
             <div class="mode-card" onclick="selectGameMode('duo', this)">
-                <div style="font-size: 24px;">👥</div>
+                <div style="font-size: 22px;">👥</div>
                 <h4>Cyber Duo</h4>
                 <span>Co-Op / 2 Players</span>
             </div>
             <div class="mode-card" onclick="selectGameMode('squad', this)">
-                <div style="font-size: 24px;">🌐</div>
+                <div style="font-size: 22px;">🌐</div>
                 <h4>Squad 6+</h4>
                 <span>Global Voice Room</span>
             </div>
@@ -154,35 +169,60 @@
 
         <!-- إعدادات غرفة السكواد والدردشة والشبكة المحدثة للوبي الشبيه بـ Free Fire -->
         <div id="squadConfigPanel">
-            <div style="font-size: 13px; color: #00ffff; margin-bottom: 6px; font-weight: bold;">👥 Party Lobby Gateway</div>
+            <div style="font-size: 12px; color: #00ffff; margin-bottom: 5px; font-weight: bold;">👥 Party Lobby Gateway</div>
             <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
                 <input type="text" id="playerNameInput" value="Player" placeholder="Name">
                 <input type="text" id="roomCodeInput" value="cyber6226" placeholder="Room Code">
                 <button class="net-btn" onclick="joinPartyLobby()">JOIN</button>
                 <button class="voice-btn" id="voiceToggleBtn" onclick="toggleVoiceChat()">🎤</button>
             </div>
-            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 6px;">Status: Not in lobby</div>
+            <div id="squadStatusText" style="font-size: 11px; color: #ffd700; margin-top: 5px;">Status: Not in lobby</div>
             <div id="partyMemberList">Party Members: None</div>
         </div>
 
         <div class="character-options">
             <div class="char-card selected" onclick="selectCharacter(0, this)">
-                <div style="font-size: 32px;">🤖</div>
+                <div style="font-size: 28px;">🤖</div>
                 <h3 id="c1Title">Neon Unit</h3>
                 <span id="c1Desc">Balanced Speed</span>
             </div>
             <div class="char-card" onclick="selectCharacter(1, this)">
-                <div style="font-size: 32px;">🦾</div>
+                <div style="font-size: 28px;">🦾</div>
                 <h3 id="c2Title">Quantum Mecha</h3>
                 <span id="c2Desc">High Durability</span>
             </div>
             <div class="char-card" onclick="selectCharacter(2, this)">
-                <div style="font-size: 32px;">🛸</div>
+                <div style="font-size: 28px;">🛸</div>
                 <h3 id="c3Title">Warp Drone</h3>
                 <span id="c3Desc">Anti-Gravity</span>
             </div>
         </div>
-        <button id="startBtn" onclick="requestStartGame()">INITIALIZE MATRIX</button>
+
+        <div class="action-buttons">
+            <button id="startBtn" onclick="requestStartGame()">INITIALIZE MATRIX</button>
+            <button class="shop-btn" onclick="openShopModal()">🛒 HANGAR SHOP</button>
+        </div>
+    </div>
+
+    <!-- نافذة متجر الهنجار والإدمان النفسي -->
+    <div id="shopModal">
+        <h2 style="color: #ffd700; text-shadow: 0 0 15px #ffd700;">🛒 QUANTUM HANGAR SHOP</h2>
+        <p style="color: #00ffff;">Spend your Q-Coins to unlock exclusive gear!</p>
+        <div class="shop-grid">
+            <div class="shop-item">
+                <div style="font-size: 30px;">🛡️</div>
+                <h4>Gold Shield</h4>
+                <p style="font-size: 11px; color: #aaa;">Permanent Shield Start</p>
+                <button onclick="buyShopItem('shield', 150)">150 Coins</button>
+            </div>
+            <div class="shop-item">
+                <div style="font-size: 30px;">⚡</div>
+                <h4>Turbo Boost</h4>
+                <p style="font-size: 11px; color: #aaa;">Double Speed Boost</p>
+                <button onclick="buyShopItem('boost', 250)">250 Coins</button>
+            </div>
+        </div>
+        <button class="shop-btn" onclick="closeShopModal()">BACK TO LOBBY</button>
     </div>
 
     <!-- إشعار الترقية الأسطوري -->
@@ -206,6 +246,7 @@
     <div id="gameOverScreen">
         <h1 id="goTitle">SYSTEM FAILURE!</h1>
         <p id="finalScore" style="font-size: 18px; margin: 5px; color: #00ffff;">Final Score: 0</p>
+        <p id="earnedCoinsMsg" style="font-size: 16px; color: #ffd700; margin: 3px;"></p>
         <p id="highScoreMsg" style="font-size: 18px; color: #ffd700; margin: 5px 0 15px 0;"></p>
         <button id="restartBtn" onclick="resetGame()">REBOOT SYSTEM</button>
     </div>
@@ -225,6 +266,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
+        // 💎 نظام التقدم والعملات المحفوظة محلياً (LocalStorage)
+        let playerCoins = parseInt(localStorage.getItem('cyberCoins')) || 100;
+        let accountLevel = parseInt(localStorage.getItem('cyberAccountLevel')) || 1;
+        let shopInventory = JSON.parse(localStorage.getItem('cyberInventory')) || { shield: false, boost: false };
+
+        function updateUIStats() {
+            document.getElementById('playerCoins').innerText = playerCoins;
+            document.getElementById('accountLevel').innerText = accountLevel;
+            localStorage.setItem('cyberCoins', playerCoins);
+            localStorage.setItem('cyberAccountLevel', accountLevel);
+        }
+        updateUIStats();
+
+        function openShopModal() { document.getElementById('shopModal').style.display = 'flex'; }
+        function closeShopModal() { document.getElementById('shopModal').style.display = 'none'; }
+
+        function buyShopItem(itemKey, cost) {
+            if (playerCoins >= cost) {
+                playerCoins -= cost;
+                shopInventory[itemKey] = true;
+                localStorage.setItem('cyberInventory', JSON.stringify(shopInventory));
+                updateUIStats();
+                showAchievementPopup("🎉 UNLOCKED: " + itemKey.toUpperCase() + "!");
+                playSound('boost');
+            } else {
+                alert("Not enough Q-Coins! Play more matches to earn coins.");
+            }
+        }
+
+        function claimDailyReward() {
+            let lastClaim = localStorage.getItem('lastClaimDate') || '';
+            let today = new Date().toDateString();
+            if (lastClaim === today) {
+                alert("You already claimed your Daily Reward today! Come back tomorrow.");
+            } else {
+                playerCoins += 50;
+                localStorage.setItem('lastClaimDate', today);
+                updateUIStats();
+                showAchievementPopup("🎁 +50 Q-COINS CLAIMED!");
+                playSound('collect');
+            }
+        }
+
         // 🌐 إضافات الاتصال الجماعي وقائد الفريق (Party Leader)
         let socket = null;
         let remotePlayers = {};
@@ -728,7 +812,8 @@
             const shieldMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.3, wireframe: true });
             shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
             shieldMesh.position.y = 0.4;
-            shieldMesh.visible = false;
+            shieldMesh.visible = shopInventory.shield; // تفعيل درع المتجر المشتراة
+            hasShield = shopInventory.shield;
             player.add(shieldMesh);
         }
 
@@ -968,11 +1053,11 @@
             currentRankIndex = 0;
             baseGameSpeed = 0.13;
             gameSpeed = baseGameSpeed;
-            boostTimer = 0;
+            boostTimer = shopInventory.boost ? 50 : 0; // تعزيز البوستر إذا تم شراؤه من المتجر
             quantumEnergy = 0;
-            hasShield = false;
+            hasShield = shopInventory.shield;
+            if(shieldMesh) shieldMesh.visible = hasShield;
             timeWarpActive = false;
-            if(shieldMesh) shieldMesh.visible = false;
             if(timeEcho) timeEcho.visible = false;
             player.position.set(0, 0, 0);
             player.rotation.z = 0;
@@ -1092,6 +1177,12 @@
                             stopCyberpunkMusic();
                             playSound('crash');
 
+                            // حساب العملات المكتسبة بناءً على النتيجة وتحديث مستويات الحساب
+                            let earnedCoins = Math.floor(score / 5);
+                            playerCoins += earnedCoins;
+                            accountLevel += Math.floor(score / 100);
+                            updateUIStats();
+
                             let t = translations[currentLang] || translations.en;
                             let isNewHighScore = false;
                             if (score > highScore) {
@@ -1101,6 +1192,7 @@
                             }
 
                             document.getElementById('finalScore').innerText = (t.final || "Final Score") + ": " + score;
+                            document.getElementById('earnedCoinsMsg').innerText = `💎 Earned +${earnedCoins} Q-Coins!`;
                             document.getElementById('highScoreMsg').innerText = isNewHighScore ? (t.newHigh || "🎉 New Quantum Record!") : ((t.high || "High Score") + ": " + highScore);
                             document.getElementById('gameOverScreen').style.display = 'flex';
                         }
@@ -1165,40 +1257,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-    </script>
-    
-    <!-- ⚡ النظام الخارق المضاف لزيادة المتعة والتشويق ⚡ -->
-    <script>
-        let superLaserPower = false;
-        let superLaserTimer = null;
-
-        // إضافة سلاح الليزر الخارق عند شحن الطاقة للحد الأقصى (100%)
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyE' && quantumEnergy >= 100) {
-                activateSuperPower();
-            }
-        });
-
-        function activateSuperPower() {
-            quantumEnergy = 0;
-            superLaserPower = true;
-            playSound('laser');
-            showAchievementPopup("⚡ SUPER QUANTUM OVERDRIVE! ⚡");
-
-            // تدمير جميع العوائق الظاهرة على الشاشة فوراً
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].position.z = -100;
-                score += 30;
-            }
-            updateScoreDisplay();
-
-            // إضاءة احتفالية شاشة اللعبة
-            scene.background = new THREE.Color(0x330066);
-            setTimeout(() => {
-                scene.background = new THREE.Color(fogColor);
-                superLaserPower = false;
-            }, 3000);
-        }
     </script>
 </body>
 </html>
